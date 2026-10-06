@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Kassationsregistrering</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10202a">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{--bg:#10202a;--card:#16303d;--ink:#eef4f7;--mut:#8fa9b5;--line:#234453;--acc:#00b2a9;--r:#e5544c;--y:#e6a417;--g:#36b36b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.3 "Segoe UI",system-ui,Arial,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;flex:none;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+header h1{font-size:16px;margin:0}
+.hright{display:flex;gap:6px;align-items:center}
+.iconbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:9px;width:38px;height:38px;font-size:17px;position:relative}
+.badge{position:absolute;top:-5px;right:-5px;background:var(--y);color:#2a1d00;font-size:10px;font-weight:800;border-radius:9px;padding:1px 5px}
+.langs{display:flex;gap:4px}
+.langs button{background:var(--card);border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:7px 8px;font-size:12px;font-weight:700}
+.langs button.on{background:var(--acc);color:#04211e;border-color:var(--acc)}
+.crumb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 16px 8px;color:var(--mut);font-size:13px}
+.crumb b{color:var(--ink)}
+.crumb a{color:var(--acc);text-decoration:underline;font-size:12px;cursor:pointer}
+.net{font-size:11px;padding:2px 8px;border-radius:9px;border:1px solid var(--line)}
+.net.on{color:var(--g);border-color:var(--g)}.net.off{color:var(--y);border-color:var(--y)}
+main{flex:1;display:flex;flex-direction:column;padding:4px 16px 16px;overflow:auto}
+.grid{display:grid;gap:12px;flex:1;align-content:start}
+.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:620px){.g3{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 8px;text-align:center;font-size:17px;font-weight:700;min-height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tile:active{transform:scale(.96);background:var(--acc);color:#04211e}
+.reason{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:22px 8px;text-align:center;font-size:18px;font-weight:700;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.reason .ic{font-size:28px}
+.reason:active{transform:scale(.96);border-color:var(--r);background:#3a1d1c}
+.backbar{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.backbtn{background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:9px 14px;font-size:14px;font-weight:600;cursor:pointer}
+.okbox{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.okbox .chk{width:78px;height:78px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:38px}
+.okbox .t{font-size:19px;font-weight:700}.okbox .s{color:var(--mut);font-size:13px;text-align:center;max-width:300px}
+.search{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px;margin-bottom:10px}
+.artrow{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.artrow .nm{font-weight:700;font-size:15px;margin-bottom:8px}
+.sizes{display:flex;flex-wrap:wrap;gap:6px}
+.sizes button{background:#0e2129;border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:9px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.sizes button:active{background:var(--acc);color:#04211e}
+footer{flex:none;display:flex;justify-content:space-between;align-items:center;padding:8px 16px;color:var(--mut);font-size:12px;border-top:1px solid var(--line)}
+.panel{position:fixed;inset:0;background:#0b161ccc;display:flex;align-items:flex-end;z-index:10}
+.pcard{background:var(--card);width:100%;max-height:82vh;border-radius:16px 16px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));overflow:auto}
+.pcard h3{margin:0 0 8px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
+.row2{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
+.btn{background:var(--acc);color:#04211e;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
+.pending{background:#3a2c0e;color:var(--y);border-radius:10px;padding:8px 10px;font-size:12px;margin-bottom:8px}
+.warn{background:#3a1d1c;color:#f3a7a2;border-radius:10px;padding:8px 10px;font-size:12px;margin:0 16px 8px}
+</style>
+</head>
+<body>
+<header>
+<h1 id="h-title"></h1>
+<div class="hright">
+<div class="langs" id="langs"></div>
+<button class="iconbtn" id="histbtn">☰<span class="badge" id="pendbadge" style="display:none">0</span></button>
+</div>
+</header>
+<div id="cfgwarn"></div>
+<div class="crumb" id="crumb"></div>
+<main id="main"></main>
+<footer>
+<span id="f-count"></span>
+<span class="net" id="netstat"></span>
+</footer>
+<div id="panel" class="panel" style="display:none"></div>
+
+<script src="config.js"></script>
+<script src="queue.js"></script>
+<script src="sync.js"></script>
+<script>
+const T={
+da:{title:"Kassationsregistrering",sub:"Vælg kategori",back:"◀ Tilbage",change:"skift",choose_reason:"Vælg årsag",ok_t:"Registreret",count:"I dag: {n}",online:"Online",offline:"Offline – gemmes lokalt",pending:"{n} afventer synkronisering",log:"Historik",logtitle:"Registreringer (denne enhed)",export:"Eksportér CSV",close:"Luk",search:"Søg artikel…",time:"Tid",kat:"Kategori",art:"Artikel",str:"Størrelse",aars:"Årsag",synced:"Sync",yes:"✓",no:"…",cfgwarn:"Appen er endnu ikke sat op: indsæt jeres Power Automate-URL i config.js.",
+cat_seng:"Sengelinned",cat_frotte:"Frotté",cat_duge:"Duge & Servietter",cat_kok:"Køkkentøj",
+r_misfarvet:"Misfarvet",r_hul:"Hul",r_jordslaaet:"Jordslået",r_traevlet:"Trævlet",r_rust:"Rust",r_olie:"Olie"},
+en:{title:"Discard registration",sub:"Select category",back:"◀ Back",change:"change",choose_reason:"Select reason",ok_t:"Registered",count:"Today: {n}",online:"Online",offline:"Offline – saved locally",pending:"{n} pending sync",log:"History",logtitle:"Entries (this device)",export:"Export CSV",close:"Close",search:"Search article…",time:"Time",kat:"Category",art:"Article",str:"Size",aars:"Reason",synced:"Synced",yes:"✓",no:"…",cfgwarn:"App not configured yet: set your Power Automate URL in config.js.",
+cat_seng:"Bed linen",cat_frotte:"Terry (towels)",cat_duge:"Tablecloths & napkins",cat_kok:"Kitchen textiles",
+r_misfarvet:"Discolored",r_hul:"Hole",r_jordslaaet:"Grey/dingy",r_traevlet:"Frayed",r_rust:"Rust",r_olie:"Oil"},
+pl:{title:"Rejestracja odrzutów",sub:"Wybierz kategorię",back:"◀ Wstecz",change:"zmień",choose_reason:"Wybierz przyczynę",ok_t:"Zarejestrowano",count:"Dziś: {n}",online:"Online",offline:"Offline – zapisano lokalnie",pending:"{n} oczekuje",log:"Historia",logtitle:"Wpisy (to urządzenie)",export:"Eksport CSV",close:"Zamknij",search:"Szukaj artykułu…",time:"Czas",kat:"Kategoria",art:"Artykuł",str:"Rozmiar",aars:"Przyczyna",synced:"Sync",yes:"✓",no:"…",cfgwarn:"Aplikacja nieskonfigurowana: ustaw adres URL w config.js.",
+cat_seng:"Pościel",cat_frotte:"Frotte (ręczniki)",cat_duge:"Obrusy i serwetki",cat_kok:"Tekstylia kuchenne",
+r_misfarvet:"Przebarwienie",r_hul:"Dziura",r_jordslaaet:"Poszarzałe",r_traevlet:"Postrzępione",r_rust:"Rdza",r_olie:"Olej"},
+ro:{title:"Înregistrare rebuturi",sub:"Alege categoria",back:"◀ Înapoi",change:"schimbă",choose_reason:"Alege motivul",ok_t:"Înregistrat",count:"Azi: {n}",online:"Online",offline:"Offline – salvat local",pending:"{n} în așteptare",log:"Istoric",logtitle:"Înregistrări (acest dispozitiv)",export:"Export CSV",close:"Închide",search:"Caută articol…",time:"Ora",kat:"Categorie",art:"Articol",str:"Mărime",aars:"Motiv",synced:"Sync",yes:"✓",no:"…",cfgwarn:"Aplicația nu e configurată: setează URL-ul în config.js.",
+cat_seng:"Lenjerie de pat",cat_frotte:"Frotte (prosoape)",cat_duge:"Fețe de masă și șervețele",cat_kok:"Textile bucătărie",
+r_misfarvet:"Decolorat",r_hul:"Gaură",r_jordslaaet:"Cenușiu",r_traevlet:"Destrămat",r_rust:"Rugină",r_olie:"Ulei"},
+uk:{title:"Реєстрація браку",sub:"Оберіть категорію",back:"◀ Назад",change:"змінити",choose_reason:"Оберіть причину",ok_t:"Зареєстровано",count:"Сьогодні: {n}",online:"Онлайн",offline:"Офлайн – збережено локально",pending:"{n} очікує",log:"Історія",logtitle:"Записи (цей пристрій)",export:"Експорт CSV",close:"Закрити",search:"Пошук артикулу…",time:"Час",kat:"Категорія",art:"Артикул",str:"Розмір",aars:"Причина",synced:"Sync",yes:"✓",no:"…",cfgwarn:"Додаток не налаштовано: вкажіть URL у config.js.",
+cat_seng:"Постільна білизна",cat_frotte:"Фроте (рушники)",cat_duge:"Скатертини й серветки",cat_kok:"Кухонний текстиль",
+r_misfarvet:"Знебарвлення",r_hul:"Дірка",r_jordslaaet:"Посіріле",r_traevlet:"Потерте",r_rust:"Іржа",r_olie:"Олія"}};
+const LANGS=["da","en","pl","ro","uk"];
+const CATS=[["cat_seng","🛏️"],["cat_frotte","🧻"],["cat_duge","🍽️"],["cat_kok","🧽"]];
+/* Artikler og størrelser er specifikke pr. kategori. */
+const CATALOG={
+cat_seng:{articles:[["Dynebetræk",["140X212","200X220","245X235","Junior","Baby"]],["Pudebetræk",["Standard","70X80","64X80","Barn"]],["Lagen",["Single","Queen","King","XL"]],["Madrasbeskytter",["90X200","160X200","180X200"]],["Sengetæppe",["—"]]]},
+cat_frotte:{articles:[["Håndklæde",["Lille","Mellem","Stor"]],["Vaskeklud",["30X30"]],["Bademåtte",["50X70","50X80"]],["Badekåbe",["S","M/L","XL","XXL","One size"]],["Linnedhåndklæde",["—"]]]},
+cat_duge:{articles:[["Dug",["140X225","180X180","160X380"]],["Serviet",["48X48"]]]},
+cat_kok:{articles:[["Viskestykke",["Basic","Lux"]]]}};
+const REASONS=[["r_misfarvet","🎨"],["r_hul","🕳️"],["r_jordslaaet","☁️"],["r_traevlet","🧵"],["r_rust","🟤"],["r_olie","🛢️"]];
+let lang="da",cat=null,art=null,size=null,todayCount=0;
+function $(s){return document.querySelector(s)}
+const t=k=>(T[lang][k]||T.da[k]||k);
+async function updatePendBadge(){
+const p=await window.KassationQueue.getPending();
+$('#pendbadge').style.display=p.length?'block':'none';$('#pendbadge').textContent=p.length;
+}
+function renderHeader(){
+$('#h-title').textContent=t('title');
+$('#f-count').textContent=t('count').replace('{n}',todayCount);
+const net=navigator.onLine;$('#netstat').textContent=net?t('online'):t('offline');$('#netstat').className='net '+(net?'on':'off');
+$('#cfgwarn').innerHTML=window.KassationSync&&!window.KassationSync.configured()?`<div class="warn">${t('cfgwarn')}</div>`:'';
+updatePendBadge();
+const lw=$('#langs');lw.innerHTML='';
+LANGS.forEach(l=>{const b=document.createElement('button');b.textContent=l.toUpperCase();b.className=l===lang?'on':'';b.onclick=()=>{lang=l;render()};lw.appendChild(b)});
+renderCrumb();
+}
+function renderCrumb(){
+const c=$('#crumb');
+if(!cat){c.innerHTML='';return}
+c.innerHTML=`<b>${t(cat)}</b> <a id="chcat">(${t('change')})</a>`;
+const cc=$('#chcat');if(cc)cc.onclick=screenCats;
+}
+function screenCats(){
+cat=null;art=null;size=null;renderCrumb();
+const m=$('#main');
+m.innerHTML=`<div class="crumb" style="padding:0 0 8px">${t('sub')}</div><div class="grid g2" id="g"></div>`;
+const g=$('#g');
+CATS.forEach(([k,ic])=>{const d=document.createElement('div');d.className='tile';d.innerHTML=`<div>${ic}<br>${t(k)}</div>`;d.onclick=()=>{cat=k;screenArt()};g.appendChild(d)});
+}
+function screenArt(){
+art=null;size=null;renderCrumb();
+const m=$('#main');
+m.innerHTML=`<input class="search" id="sr" placeholder="${t('search')}"><div id="list"></div>`;
+const draw=q=>{
+const list=$('#list');list.innerHTML='';
+(CATALOG[cat].articles||[]).filter(([nm])=>!q||nm.toLowerCase().includes(q.toLowerCase())).forEach(([nm,sizes])=>{
+const row=document.createElement('div');row.className='artrow';
+row.innerHTML=`<div class="nm">${nm}</div><div class="sizes">${sizes.map(s=>`<button data-s="${s}">${s}</button>`).join('')}</div>`;
+row.querySelectorAll('button').forEach(b=>b.onclick=()=>{art=nm;size=b.dataset.s;screenReason()});
+list.appendChild(row);
+});
+};
+draw('');$('#sr').oninput=e=>draw(e.target.value);
+}
+function screenReason(){
+const m=$('#main');
+m.innerHTML=`<div class="backbar"><button class="backbtn" id="b2">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${art}</b>${size&&size!=='—'?' · '+size:''} · ${t('choose_reason')}</div><div class="grid g3" id="g"></div>`;
+$('#b2').onclick=screenArt;
+const g=$('#g');
+REASONS.forEach(([k,ic])=>{const d=document.createElement('div');d.className='reason';d.innerHTML=`<div class="ic">${ic}</div><div>${t(k)}</div>`;d.onclick=()=>confirmSave(k);g.appendChild(d)});
+}
+async function confirmSave(reasonKey){
+const rec={ts:Date.now(),lang,category:cat,article:art,size:size,reason:reasonKey};
+await window.KassationQueue.addRecord(rec);
+todayCount++;renderHeader();
+window.KassationSync.flushQueue();
+screenArt(); // gå med det samme tilbage til listen - ingen ventetid
+showToast(`✓ ${t(cat)} · ${art}${size&&size!=='—'?' · '+size:''} · ${t(reasonKey)}`);
+}
+function showToast(msg){
+let el=document.getElementById('toast');
+if(!el){el=document.createElement('div');el.id='toast';el.style.cssText='position:fixed;left:16px;right:16px;bottom:70px;background:var(--g);color:#06250f;padding:10px 14px;border-radius:10px;font-weight:700;font-size:13px;text-align:center;z-index:20;transition:opacity .3s';document.body.appendChild(el)}
+el.textContent=msg;el.style.opacity='1';
+clearTimeout(window._toastTimer);
+window._toastTimer=setTimeout(()=>{el.style.opacity='0'},900);
+}
+window.addEventListener('kassation:synced',updatePendBadge);
+$('#histbtn').onclick=openHist;
+async function openHist(){
+const p=$('#panel');p.style.display='flex';
+p.innerHTML=`<div class="pcard"><div class="row2"><h3>${t('logtitle')}</h3><button class="backbtn" id="lc">${t('close')}</button></div><div id="ltbl">…</div><div class="row2" style="margin-top:10px"><span></span><button class="btn" id="lex">${t('export')}</button></div></div>`;
+$('#lc').onclick=()=>p.style.display='none';
+const rows=await window.KassationQueue.getAllRecords(300);
+const pendCount=rows.filter(r=>!r.synced).length;
+const pendHtml=pendCount?`<div class="pending">${t('pending').replace('{n}',pendCount)}</div>`:'';
+$('#ltbl').innerHTML=pendHtml+(rows.length?`<table><tr><th>${t('time')}</th><th>${t('kat')}</th><th>${t('art')}</th><th>${t('str')}</th><th>${t('aars')}</th><th>${t('synced')}</th></tr>`+
+rows.map(r=>`<tr><td>${new Date(r.ts).toLocaleString()}</td><td>${t(r.category)}</td><td>${r.article}</td><td>${r.size&&r.size!=='—'?r.size:''}</td><td>${t(r.reason)}</td><td>${r.synced?t('yes'):t('no')}</td></tr>`).join('')+`</table>`:'');
+$('#lex').onclick=()=>{
+const csv='time,category,article,size,reason,synced\n'+rows.map(r=>`${new Date(r.ts).toISOString()},${r.category},${r.article},${r.size||''},${r.reason},${r.synced}`).join('\n');
+const blob=new Blob([csv],{type:'text/csv'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kasseringer.csv';a.click();
+};
+}
+function render(){renderHeader();screenCats()}
+window.addEventListener('online',renderHeader);
+window.addEventListener('offline',renderHeader);
+render();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js');}
+</script>
+</body>
+</html>
