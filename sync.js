@@ -13,6 +13,10 @@
     const headers = { 'Content-Type': 'application/json' };
     if (cfg.API_KEY) headers['x-api-key'] = cfg.API_KEY;
     const { id, synced, ...payload } = record; // id/synced er kun til lokalt brug
+    // Send læsbar dansk tekst til SharePoint (fx "Duge", "Misfarvet") i stedet for tekniske nøgler.
+    const toDa = window.daLabel || (x => x);
+    payload.category = toDa(payload.category);
+    payload.reason = toDa(payload.reason);
     const res = await fetch(cfg.FLOW_URL, {
       method: 'POST',
       headers,
