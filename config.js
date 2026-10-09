@@ -5,5 +5,5 @@
 
 window.KASSATION_CONFIG = {
   FLOW_URL: "PASTE-DIN-POWER-AUTOMATE-URL-HER",
-  API_KEY: ""
+  API_KEY: "JMbMRsaJTpRFlMaq9suwbcWmVgPJBchd"
 };
