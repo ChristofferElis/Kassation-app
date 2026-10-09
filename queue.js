@@ -73,4 +73,22 @@ async function getAllRecords(limit = 200) {
   });
 }
 
-window.KassationQueue = { addRecord, markSynced, getPending, getAllRecords };
+// Sletter en registrering, men KUN hvis den ikke er sendt endnu (bruges af Fortryd). Returnerer true/false.
+async function deleteIfPending(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const os = tx.objectStore(STORE);
+    const getReq = os.get(id);
+    getReq.onsuccess = () => {
+      const rec = getReq.result;
+      if (!rec || rec.synced) { resolve(false); return; }
+      const del = os.delete(id);
+      del.onsuccess = () => resolve(true);
+      del.onerror = () => reject(del.error);
+    };
+    getReq.onerror = () => reject(getReq.error);
+  });
+}
+
+window.KassationQueue = { addRecord, markSynced, getPending, getAllRecords, deleteIfPending };
