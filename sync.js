@@ -4,6 +4,7 @@
 
 (function () {
   const cfg = window.KASSATION_CONFIG || {};
+  const UNDO_MS = 4000; // skal være længere end Fortryd-banneret (3500 ms) i index.html
 
   function configured() {
     return cfg.FLOW_URL && !cfg.FLOW_URL.includes('PASTE-DIN');
@@ -27,7 +28,9 @@
 
   async function flushQueue() {
     if (!navigator.onLine || !configured()) return;
-    const pending = await window.KassationQueue.getPending();
+    const all = await window.KassationQueue.getPending();
+    // Nye registreringer venter kort (UNDO_MS), så Fortryd i appen når at fjerne dem, før de sendes.
+    const pending = all.filter(r => Date.now() - r.ts >= UNDO_MS);
     for (const rec of pending) {
       try {
         await sendRecord(rec);
