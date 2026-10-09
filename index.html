@@ -15,6 +15,7 @@ html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.3 "Segoe UI",system-ui,Arial,sans-serif;display:flex;flex-direction:column}
 header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;flex:none;padding-top:calc(12px + env(safe-area-inset-top,0px))}
 header h1{font-size:16px;margin:0}
+@media(max-width:480px){header{flex-wrap:wrap;row-gap:6px}}
 .hright{display:flex;gap:6px;align-items:center}
 .iconbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:9px;width:38px;height:38px;font-size:17px;position:relative}
 .badge{position:absolute;top:-5px;right:-5px;background:var(--y);color:#2a1d00;font-size:10px;font-weight:800;border-radius:9px;padding:1px 5px}
@@ -31,12 +32,12 @@ main{flex:1;display:flex;flex-direction:column;padding:4px 16px 16px;overflow:au
 .g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
 @media(max-width:620px){.g3{grid-template-columns:repeat(2,1fr)}}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 8px;text-align:center;font-size:17px;font-weight:700;min-height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.grid.fill{align-content:stretch;grid-auto-rows:minmax(84px,1fr);min-height:0}
+.grid.fill{grid-template-columns:repeat(var(--cw),1fr);align-content:stretch;grid-auto-rows:minmax(84px,1fr);min-height:0}
 .grid.fill .tile{min-height:0;padding:12px}
 .grid.fill .tile .ti{font-size:34px;line-height:1.3}
 .tile.mid{font-size:22px}.tile.mid .ti{font-size:44px;line-height:1.3}
 .tile.big{font-size:30px}.tile.big .ti{font-size:76px;line-height:1.3}
-@media(max-width:620px){.tile.big{font-size:24px}.tile.big .ti{font-size:52px}}
+@media(max-width:620px){.grid.fill{grid-template-columns:repeat(var(--cn),1fr)}.tile.big{font-size:24px}.tile.big .ti{font-size:52px}}
 .tile:active{transform:scale(.96);background:var(--acc);color:#04211e}
 .reason{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:22px 8px;text-align:center;font-size:18px;font-weight:700;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
 .reason .ic{font-size:28px}
@@ -222,6 +223,12 @@ m.innerHTML=`<div class="crumb" style="padding:0 0 8px">${t('sub_dept')}</div>
 const gO=$('#gO'),gV=$('#gV');
 DEPTS.forEach(([k,nm,reg])=>{const d=document.createElement('div');d.className='tile';d.textContent=nm;d.onclick=()=>{dept=k;screenCats()};(reg==='øst'?gO:gV).appendChild(d)});
 }
+function fillGrid(g,n){ // fliser fylder mere, jo færre der er; kolonner følger skærmbredden via CSS (virker også ved drejning)
+g.classList.add('fill');
+g.style.setProperty('--cw',n<=3?n:n===4?2:3);
+g.style.setProperty('--cn',n<=2?1:2);
+return n<=3?'big':n<=6?'mid':'';
+}
 function screenCats(){
 cat=null;art=null;size=null;renderCrumb();
 const m=$('#main');
@@ -230,10 +237,7 @@ $('#b0').onclick=screenDept;
 const g=$('#g');
 const cats=(DEPT_CATS[dept]||[]).concat([["cat_andet","➕"]]);
 // fliserne fylder mere, jo færre kategorier der er (fx 2 + Andet = tre store fliser)
-const n=cats.length,narrow=window.innerWidth<620;
-const cols=narrow?(n<=2?1:2):(n<=3?n:n===4?2:3);
-g.classList.add('fill');g.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-const sz=n<=3?'big':n<=6?'mid':'';
+const sz=fillGrid(g,cats.length);
 cats.forEach(([k,ic])=>{const d=document.createElement('div');d.className='tile '+sz;d.innerHTML=`<div><span class="ti">${ic}</span><br>${t(k)}</div>`;d.onclick=()=>{cat=k;screenArt()};g.appendChild(d)});
 }
 function catArticles(){return ((CATALOG_BY_DEPT[dept]&&CATALOG_BY_DEPT[dept][cat]&&CATALOG_BY_DEPT[dept][cat].articles)||[])}
@@ -246,7 +250,8 @@ if(base.length>=2){
 m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px">${t('choose_art')}</div><div class="grid g2" id="ag"></div>`;
 $('#b1').onclick=screenCats;
 const g=$('#ag');
-base.concat([["Andet",[[]]]]).forEach(([nm,sizes])=>{const d=document.createElement('div');d.className='tile';d.textContent=tArt(nm);d.onclick=()=>{if(nm==='Andet'){art=nm;size=[];curArt=null;screenReason()}else screenVar(nm,sizes)};g.appendChild(d)});
+const allA=base.concat([["Andet",[[]]]]);const asz=fillGrid(g,allA.length);
+allA.forEach(([nm,sizes])=>{const d=document.createElement('div');d.className='tile '+asz;d.textContent=tArt(nm);d.onclick=()=>{if(nm==='Andet'){art=nm;size=[];curArt=null;screenReason()}else screenVar(nm,sizes)};g.appendChild(d)});
 return;
 }
 m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button></div><input class="search" id="sr" placeholder="${t('search')}"><div id="list"></div>`;
