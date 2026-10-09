@@ -31,6 +31,12 @@ main{flex:1;display:flex;flex-direction:column;padding:4px 16px 16px;overflow:au
 .g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
 @media(max-width:620px){.g3{grid-template-columns:repeat(2,1fr)}}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 8px;text-align:center;font-size:17px;font-weight:700;min-height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.grid.fill{align-content:stretch;grid-auto-rows:minmax(84px,1fr);min-height:0}
+.grid.fill .tile{min-height:0;padding:12px}
+.grid.fill .tile .ti{font-size:34px;line-height:1.3}
+.tile.mid{font-size:22px}.tile.mid .ti{font-size:44px;line-height:1.3}
+.tile.big{font-size:30px}.tile.big .ti{font-size:76px;line-height:1.3}
+@media(max-width:620px){.tile.big{font-size:24px}.tile.big .ti{font-size:52px}}
 .tile:active{transform:scale(.96);background:var(--acc);color:#04211e}
 .reason{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:22px 8px;text-align:center;font-size:18px;font-weight:700;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
 .reason .ic{font-size:28px}
@@ -223,7 +229,12 @@ m.innerHTML=`<div class="backbar"><button class="backbtn" id="b0">${t('back')}</
 $('#b0').onclick=screenDept;
 const g=$('#g');
 const cats=(DEPT_CATS[dept]||[]).concat([["cat_andet","➕"]]);
-cats.forEach(([k,ic])=>{const d=document.createElement('div');d.className='tile';d.innerHTML=`<div>${ic}<br>${t(k)}</div>`;d.onclick=()=>{cat=k;screenArt()};g.appendChild(d)});
+// fliserne fylder mere, jo færre kategorier der er (fx 2 + Andet = tre store fliser)
+const n=cats.length,narrow=window.innerWidth<620;
+const cols=narrow?(n<=2?1:2):(n<=3?n:n===4?2:3);
+g.classList.add('fill');g.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+const sz=n<=3?'big':n<=6?'mid':'';
+cats.forEach(([k,ic])=>{const d=document.createElement('div');d.className='tile '+sz;d.innerHTML=`<div><span class="ti">${ic}</span><br>${t(k)}</div>`;d.onclick=()=>{cat=k;screenArt()};g.appendChild(d)});
 }
 function catArticles(){return ((CATALOG_BY_DEPT[dept]&&CATALOG_BY_DEPT[dept][cat]&&CATALOG_BY_DEPT[dept][cat].articles)||[])}
 function screenArt(){
