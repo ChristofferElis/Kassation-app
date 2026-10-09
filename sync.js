@@ -48,3 +48,4 @@
   setInterval(flushQueue, 60000);
   document.addEventListener('DOMContentLoaded', () => setTimeout(flushQueue, 1500));
 })();
+
