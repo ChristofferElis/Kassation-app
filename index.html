@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Kassationsregistrering</title>
+<meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#10202a">
 <link rel="icon" href="icon.svg">
@@ -68,6 +69,13 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left
 .btn{background:var(--acc);color:#04211e;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
 .pending{background:#3a2c0e;color:var(--y);border-radius:10px;padding:8px 10px;font-size:12px;margin-bottom:8px}
 .warn{background:#3a1d1c;color:#f3a7a2;border-radius:10px;padding:8px 10px;font-size:12px;margin:0 16px 8px}
+.lockov{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.lockbox{width:100%;max-width:340px;text-align:center}
+.lockbox h2{margin:0 0 6px;font-size:20px}.lockbox p{margin:0 0 16px;color:var(--mut);font-size:14px}
+.lockbox input{width:100%;font-size:28px;letter-spacing:8px;text-align:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);user-select:text}
+.lockbox button{margin-top:12px;width:100%;padding:14px;font-size:17px;font-weight:700;border:0;border-radius:12px;background:var(--acc);color:#04211e}
+.lockbox .err{color:var(--r);min-height:20px;margin-top:10px;font-size:14px}
+.lockbox code{display:block;word-break:break-all;user-select:text;font-size:12px;margin-top:12px;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -342,7 +350,35 @@ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=
 function render(){renderHeader();screenDept()}
 window.addEventListener('online',renderHeader);
 window.addEventListener('offline',renderHeader);
-render();
+
+/* ---- PIN-lås ---- */
+const PIN_SALT='kassation-v1:';
+async function pinHash(x){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(PIN_SALT+x));return Array.from(new Uint8Array(b)).map(v=>v.toString(16).padStart(2,'0')).join('')}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function showOv(html){let o=document.getElementById('lockov');if(!o){o=document.createElement('div');o.id='lockov';o.className='lockov';document.body.appendChild(o)}o.innerHTML='<div class="lockbox">'+html+'</div>';return o}
+function pinTool(){
+  const o=showOv('<h2>Lav PIN-hash</h2><p>Skriv den kode I vil bruge</p><input id="pt" inputmode="numeric" autocomplete="off"><button id="pg">Lav hash</button><code id="po"></code>');
+  o.querySelector('#pg').onclick=async()=>{const v=o.querySelector('#pt').value.trim();if(!v)return;o.querySelector('#po').textContent=await pinHash(v)};
+}
+function startApp(){const o=document.getElementById('lockov');if(o)o.remove();render()}
+async function gate(){
+  if(location.hash==='#makepin'){pinTool();return}
+  const H=(window.KASSATION_CONFIG&&window.KASSATION_CONFIG.PIN_HASH)||'';
+  if(!H||!window.crypto||!crypto.subtle){startApp();return}
+  if(lsGet('kass_ok')===H){startApp();return}
+  let fails=0,until=0;
+  const o=showOv('<h2>🔒 Kassationsregistrering</h2><p>Indtast adgangskode</p><input id="pi" type="password" inputmode="numeric" autocomplete="off"><button id="pb">Åbn</button><div class="err" id="pe"></div>');
+  const inp=o.querySelector('#pi'),err=o.querySelector('#pe');
+  const go=async()=>{
+    if(Date.now()<until){err.textContent='Vent lidt og prøv igen';return}
+    if(await pinHash(inp.value.trim())===H){lsSet('kass_ok',H);startApp()}
+    else{fails++;inp.value='';err.textContent='Forkert kode';if(fails>=5){until=Date.now()+30000;fails=0;err.textContent='For mange forsøg – vent 30 sek.'}}
+  };
+  o.querySelector('#pb').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()};inp.focus();
+}
+window.addEventListener('hashchange',()=>location.reload());
+gate();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js');}
 </script>
 </body>
