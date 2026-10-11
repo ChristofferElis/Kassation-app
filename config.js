@@ -8,5 +8,5 @@ window.KASSATION_CONFIG = {
   API_KEY: "JMbMRsaJTpRFlMaq9suwbcWmVgPJBchd",
   // Adgangskode: lav en hash på siden .../index.html#makepin og indsæt den her.
   // Tom tekst = ingen adgangskode.
-  PIN_HASH: ""
+  PIN_HASH: "02271a368d7b3ad06dabf18c1767d26c183fe29fb4e2fc4456ab0dc51ec0d5ec"
 };
