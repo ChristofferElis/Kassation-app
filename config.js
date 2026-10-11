@@ -5,5 +5,8 @@
 
 window.KASSATION_CONFIG = {
   FLOW_URL: "PASTE-DIN-POWER-AUTOMATE-URL-HER",
-  API_KEY: "JMbMRsaJTpRFlMaq9suwbcWmVgPJBchd"
+  API_KEY: "JMbMRsaJTpRFlMaq9suwbcWmVgPJBchd",
+  // Adgangskode: lav en hash på siden .../index.html#makepin og indsæt den her.
+  // Tom tekst = ingen adgangskode.
+  PIN_HASH: ""
 };
