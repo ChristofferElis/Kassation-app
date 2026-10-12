@@ -90,7 +90,7 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left
 .lockov{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
 .lockbox{width:100%;max-width:340px;text-align:center}
 .lockbox h2{margin:0 0 6px;font-size:20px}.lockbox p{margin:0 0 16px;color:var(--mut);font-size:14px}
-.lockbox input{width:100%;font-size:28px;letter-spacing:8px;text-align:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);user-select:text}
+.lockbox input{width:100%;font-size:28px;letter-spacing:4px;text-align:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);user-select:text}
 .lockbox button{margin-top:12px;width:100%;padding:14px;font-size:17px;font-weight:700;border:0;border-radius:12px;background:var(--acc);color:#04211e}
 .lockbox .err{color:var(--r);min-height:20px;margin-top:10px;font-size:14px}
 .lockbox code{display:block;word-break:break-all;user-select:text;font-size:12px;margin-top:12px;color:var(--ink)}
@@ -504,7 +504,7 @@ function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function showOv(html){let o=document.getElementById('lockov');if(!o){o=document.createElement('div');o.id='lockov';o.className='lockov';document.body.appendChild(o)}o.innerHTML='<div class="lockbox">'+html+'</div>';return o}
 function pinTool(){
-  const o=showOv('<h2>Lav PIN-hash</h2><p>Skriv den kode I vil bruge</p><input id="pt" inputmode="numeric" autocomplete="off"><button id="pg">Lav hash</button><code id="po"></code>');
+  const o=showOv('<h2>Lav PIN-hash</h2><p>Skriv den kode I vil bruge</p><input id="pt" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button id="pg">Lav hash</button><code id="po"></code>');
   o.querySelector('#pg').onclick=async()=>{const v=o.querySelector('#pt').value.trim();if(!v)return;o.querySelector('#po').textContent=await pinHash(v)};
 }
 function startApp(){const o=document.getElementById('lockov');if(o)o.remove();render()}
@@ -514,7 +514,7 @@ async function gate(){
   if(!H||!window.crypto||!crypto.subtle){startApp();return}
   if(lsGet('kass_ok')===H){startApp();return}
   let fails=0,until=0;
-  const o=showOv('<h2>🔒 Kassationsregistrering</h2><p>Indtast adgangskode</p><input id="pi" type="password" inputmode="numeric" autocomplete="off"><button id="pb">Åbn</button><div class="err" id="pe"></div>');
+  const o=showOv('<h2>🔒 Kassationsregistrering</h2><p>Indtast adgangskode</p><input id="pi" type="password" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button id="pb">Åbn</button><div class="err" id="pe"></div>');
   const inp=o.querySelector('#pi'),err=o.querySelector('#pe');
   const go=async()=>{
     if(Date.now()<until){err.textContent='Vent lidt og prøv igen';return}
