@@ -475,6 +475,7 @@ clearTimeout(window._toastTimer);
 window._toastTimer=setTimeout(()=>{el.style.opacity='0';el.style.pointerEvents='none'},undo?3500:(warn?3000:1200));
 }
 window.addEventListener('kassation:synced',updatePendBadge);
+window.addEventListener('kassation:synced',()=>{refreshToday();checkWarn()});
 $('#histbtn').onclick=openHist;
 async function openHist(){
 const p=$('#panel');p.style.display='flex';
