@@ -399,8 +399,9 @@ $('#ltbl').innerHTML=pendHtml+(rows.length?`<table><tr><th>${t('time')}</th><th>
 rows.map(r=>`<tr><td>${new Date(r.ts).toLocaleString()}</td><td>${r.department||''}</td><td>${t(r.category)}</td><td>${tArt(r.article)}</td><td>${entryLabel([r.variant,r.size,r.dimension,r.color,r.customer])}</td><td>${rl(r.reason)}</td><td>${r.synced?t('yes'):t('no')}</td></tr>`).join('')+`</table>`:'');
 $('#lex').onclick=()=>{
 const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-const csv='time,department,category,article,variant,size,dimension,color,customer,reason,synced\n'+rows.map(r=>[new Date(r.ts).toISOString(),r.department,r.category,r.article,r.variant,r.size,r.dimension,r.color,r.customer,r.reason,r.synced].map(q).join(',')).join('\n');
-const blob=new Blob([csv],{type:'text/csv'});
+const da=window.daLabel||(x=>x); // altid danske tekster i eksporten, uanset valgt sprog
+const csv='Tidspunkt;Afdeling;Kategori;Artikel;Variant;Størrelse;Dimension;Farve;Kunde;Årsag;Sendt\n'+rows.map(r=>[new Date(r.ts).toLocaleString('da-DK'),r.department,da(r.category),r.article,r.variant,r.size,r.dimension,r.color,r.customer,da(r.reason),r.synced?'Ja':'Nej'].map(q).join(';')).join('\r\n');
+const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}); // BOM, så Excel viser æ, ø og å korrekt
 const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kasseringer.csv';a.click();
 };
 }
