@@ -5,8 +5,11 @@
 
 window.KASSATION_CONFIG = {
   FLOW_URL: "PASTE-DIN-POWER-AUTOMATE-URL-HER",
-  API_KEY: "JMbMRsaJTpRFlMaq9suwbcWmVgPJBchd",
+  API_KEY: "",
   // Adgangskode: lav en hash på siden .../index.html#makepin og indsæt den her.
   // Tom tekst = ingen adgangskode.
-  PIN_HASH: "02271a368d7b3ad06dabf18c1767d26c183fe29fb4e2fc4456ab0dc51ec0d5ec"
+  PIN_HASH: "02271a368d7b3ad06dabf18c1767d26c183fe29fb4e2fc4456ab0dc51ec0d5ec",
+  // Nulstilling ved go-live: skriv en vilkårlig tekst, fx "golive-1". Næste gang hver enhed åbner appen,
+  // tømmes dens lokale testdata én gang, før noget sendes. Skift IKKE teksten senere, medmindre alt skal nulstilles.
+  RESET_TOKEN: ""
 };
