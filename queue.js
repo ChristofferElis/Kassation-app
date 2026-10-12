@@ -42,6 +42,7 @@ async function markSynced(id) {
       const rec = getReq.result;
       if (!rec) { resolve(); return; }
       rec.synced = true;
+      if (rec.photo) rec.photo = '(sendt)'; // billedet er afsendt – spar plads på tabletten
       const putReq = os.put(rec);
       putReq.onsuccess = () => resolve();
       putReq.onerror = () => reject(putReq.error);
@@ -91,4 +92,15 @@ async function deleteIfPending(id) {
   });
 }
 
-window.KassationQueue = { addRecord, markSynced, getPending, getAllRecords, deleteIfPending };
+// Tømmer alle lokale registreringer (bruges kun til den ene gang-nulstilling ved go-live, se RESET_TOKEN i config.js)
+async function clearAll() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).clear();
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+window.KassationQueue = { addRecord, markSynced, getPending, getAllRecords, deleteIfPending, clearAll };
