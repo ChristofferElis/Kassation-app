@@ -18,6 +18,12 @@
     const toDa = window.daLabel || (x => x);
     payload.category = toDa(payload.category);
     payload.reason = toDa(payload.reason);
+    // Foto (kun ved "Andet"): send som ren base64 + filnavn, så flowet kan lægge det som vedhæftning på rækken
+    payload.comment = payload.comment || '';
+    if (payload.photo && payload.photo.startsWith('data:')) {
+      payload.photoName = 'andet-' + record.ts + '.jpg';
+      payload.photo = payload.photo.split(',')[1];
+    } else { payload.photo = ''; payload.photoName = ''; }
     const res = await fetch(cfg.FLOW_URL, {
       method: 'POST',
       headers,
@@ -26,7 +32,23 @@
     if (!res.ok) throw new Error('Sync fejlede: ' + res.status);
   }
 
+  // Nulstilling ved go-live: ændrer I RESET_TOKEN i config.js, tømmer hver enhed sine lokale (test)registreringer
+  // ÉN gang – før noget sendes. Samme token = ingen nulstilling.
+  async function resetIfNeeded() {
+    const tok = cfg.RESET_TOKEN;
+    if (!tok) return;
+    let seen = null;
+    try { seen = localStorage.getItem('kass_reset'); } catch (e) {}
+    if (seen === tok) return;
+    try {
+      await window.KassationQueue.clearAll();
+      localStorage.setItem('kass_reset', tok);
+    } catch (e) { console.error(e); }
+  }
+  const ready = resetIfNeeded();
+
   async function flushQueue() {
+    await ready; // nulstilling først, derefter evt. afsendelse
     if (!navigator.onLine || !configured()) return;
     const all = await window.KassationQueue.getPending();
     // Nye registreringer venter kort (UNDO_MS), så Fortryd i appen når at fjerne dem, før de sendes.
@@ -48,4 +70,3 @@
   setInterval(flushQueue, 60000);
   document.addEventListener('DOMContentLoaded', () => setTimeout(flushQueue, 1500));
 })();
-
