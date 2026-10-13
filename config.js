@@ -12,6 +12,10 @@ window.KASSATION_CONFIG = {
   // Nulstilling ved go-live: skriv en vilkårlig tekst, fx "golive-1". Næste gang hver enhed åbner appen,
   // tømmes dens lokale testdata én gang, før noget sendes. Skift IKKE teksten senere, medmindre alt skal nulstilles.
   RESET_TOKEN: ""
+    // Afdelinger der er LIVE. Står der noget her, behandles alle andre afdelinger som TEST: de kan registrere som normalt
+  // (med et orange TEST-mærke), men registreringerne sendes aldrig til flowet/SharePoint. Tom liste = alle afdelinger er live.
+  // Afdelingsnøgler: plant_hil (Hillerød), plant_var (Varde), plant_hol (Holbæk), plant_ish (Ishøj), plant_karl (Karlslunde) osv.
+  LIVE_DEPTS: ["ingen"],
 
    THEME: ""
 };
