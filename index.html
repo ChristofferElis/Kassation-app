@@ -17,7 +17,7 @@ body{background:var(--bg);color:var(--ink);font:16px/1.3 var(--font);display:fle
 header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;flex:none;padding-top:calc(12px + env(safe-area-inset-top,0px));background:var(--hdr-bg);color:var(--hdr-ink);border-bottom:1px solid var(--hdr-line)}
 .hbrand{display:flex;align-items:center;gap:14px;min-width:0}
 .logo{height:30px;width:auto;display:none}.logo.on{display:block}.logoph{display:none;height:30px;padding:0 12px;border:1px dashed var(--mut);border-radius:6px;color:var(--mut);font-size:12px;align-items:center}
-.testpill{background:#ff7300;color:#fff;border-radius:7px;padding:3px 9px;font-size:12px;font-weight:800;letter-spacing:.5px;white-space:nowrap}.logoph.on{display:flex}html:not([data-theme]) .logo.on{background:#fff;height:38px;padding:6px 12px;border-radius:9px;box-sizing:border-box}html:not([data-theme]) .logoph{background:#fff;color:#4f657a;border:0;height:38px;border-radius:9px}.hbrand h1{margin:0}.logo.on~h1,.logoph.on~h1{border-left:1px solid var(--hdr-line);padding-left:14px}
+.sbar{display:grid;grid-template-columns:minmax(90px,34%) 1fr 34px;gap:10px;align-items:center;margin:9px 0;font-size:14px}.sbar .sl{font-weight:600;overflow-wrap:anywhere}.sbar .st{height:18px;background:var(--deep);border-radius:9px;overflow:hidden}.sbar .sf{height:100%;background:var(--acc);border-radius:9px}.sbar .sn{text-align:right;font-weight:800}.testpill{background:#ff7300;color:#fff;border-radius:7px;padding:3px 9px;font-size:12px;font-weight:800;letter-spacing:.5px;white-space:nowrap}.logoph.on{display:flex}html:not([data-theme]) .logo.on{background:#fff;height:38px;padding:6px 12px;border-radius:9px;box-sizing:border-box}html:not([data-theme]) .logoph{background:#fff;color:#4f657a;border:0;height:38px;border-radius:9px}.hbrand h1{margin:0}.logo.on~h1,.logoph.on~h1{border-left:1px solid var(--hdr-line);padding-left:14px}
 header h1{font-size:16px;margin:0}
 @media(max-width:480px){header{flex-wrap:wrap;row-gap:6px}}
 .hright{display:flex;gap:6px;align-items:center}
@@ -326,8 +326,8 @@ return n<=3?'big':n<=6?'mid':'';
 function screenCats(){
 cat=null;art=null;size=null;curArt=null;lockedSize=null;renderCrumb();
 const m=$('#main');
-m.innerHTML=`<div class="backbar"><button class="backbtn" id="b0">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px">${t('sub')}</div><div class="grid g2" id="g"></div>`;
-$('#b0').onclick=screenDept;
+m.innerHTML=`<div class="backbar"><button class="backbtn" id="b0">${t('back')}</button><button class="iconbtn" id="binfo" style="margin-left:auto" aria-label="${t2('stats')}">ⓘ</button></div><div class="crumb" style="padding:0 0 8px">${t('sub')}</div><div class="grid g2" id="g"></div>`;
+$('#b0').onclick=screenDept;$('#binfo').onclick=()=>openStats('d1');
 const g=$('#g');
 const cats=(DEPT_CATS[dept]||[]).concat([["cat_andet","➕"]]);
 // fliserne fylder mere, jo færre kategorier der er (fx 2 + Andet = tre store fliser)
@@ -404,11 +404,11 @@ function showRef(k,ic){
 }
 /* ---- Dagens tal, advarsel ved usendte, Andet med foto ---- */
 const I2={
-da:{today:"I dag",pcs:"stk",warn:"{n} ikke sendt – den ældste er {a} gammel. Tjek netforbindelsen.",min:"min.",hr:"t.",photo:"Tag billede",retake:"Tag nyt billede",cancel:"Annuller",comment:"Kort beskrivelse (valgfri)"},
-en:{today:"Today",pcs:"pcs",warn:"{n} not sent – the oldest is {a} old. Check the connection.",min:"min.",hr:"h",photo:"Take photo",retake:"Retake photo",cancel:"Cancel",comment:"Short description (optional)"},
-pl:{today:"Dziś",pcs:"szt.",warn:"Niewysłane: {n} – najstarsze ma {a}. Sprawdź połączenie.",min:"min",hr:"godz.",photo:"Zrób zdjęcie",retake:"Zrób nowe zdjęcie",cancel:"Anuluj",comment:"Krótki opis (opcjonalnie)"},
-ro:{today:"Azi",pcs:"buc.",warn:"{n} netrimise – cea mai veche are {a}. Verificați conexiunea.",min:"min",hr:"h",photo:"Fă o poză",retake:"Fă altă poză",cancel:"Anulează",comment:"Scurtă descriere (opțional)"},
-uk:{today:"Сьогодні",pcs:"шт.",warn:"Не надіслано: {n} – найстаріше {a}. Перевірте зв’язок.",min:"хв",hr:"год",photo:"Зробити фото",retake:"Зробити нове фото",cancel:"Скасувати",comment:"Короткий опис (необов’язково)"}
+da:{today:"I dag",pcs:"stk",warn:"{n} ikke sendt – den ældste er {a} gammel. Tjek netforbindelsen.",min:"min.",hr:"t.",photo:"Tag billede",retake:"Tag nyt billede",cancel:"Annuller",comment:"Kort beskrivelse (valgfri)",stats:"Registrerede årsager",d1:"I dag",d7:"7 dage",dall:"Alle",none:"Ingen registreringer endnu",tot:"registreringer",devnote:"Kun denne enhed"},
+en:{today:"Today",pcs:"pcs",warn:"{n} not sent – the oldest is {a} old. Check the connection.",min:"min.",hr:"h",photo:"Take photo",retake:"Retake photo",cancel:"Cancel",comment:"Short description (optional)",stats:"Registered reasons",d1:"Today",d7:"7 days",dall:"All",none:"No registrations yet",tot:"registrations",devnote:"This device only"},
+pl:{today:"Dziś",pcs:"szt.",warn:"Niewysłane: {n} – najstarsze ma {a}. Sprawdź połączenie.",min:"min",hr:"godz.",photo:"Zrób zdjęcie",retake:"Zrób nowe zdjęcie",cancel:"Anuluj",comment:"Krótki opis (opcjonalnie)",stats:"Zarejestrowane przyczyny",d1:"Dziś",d7:"7 dni",dall:"Wszystkie",none:"Brak rejestracji",tot:"rejestracji",devnote:"Tylko to urządzenie"},
+ro:{today:"Azi",pcs:"buc.",warn:"{n} netrimise – cea mai veche are {a}. Verificați conexiunea.",min:"min",hr:"h",photo:"Fă o poză",retake:"Fă altă poză",cancel:"Anulează",comment:"Scurtă descriere (opțional)",stats:"Motive înregistrate",d1:"Azi",d7:"7 zile",dall:"Toate",none:"Nicio înregistrare încă",tot:"înregistrări",devnote:"Doar acest dispozitiv"},
+uk:{today:"Сьогодні",pcs:"шт.",warn:"Не надіслано: {n} – найстаріше {a}. Перевірте зв’язок.",min:"хв",hr:"год",photo:"Зробити фото",retake:"Зробити нове фото",cancel:"Скасувати",comment:"Короткий опис (необов’язково)",stats:"Зареєстровані причини",d1:"Сьогодні",d7:"7 днів",dall:"Усі",none:"Ще немає записів",tot:"записів",devnote:"Лише цей пристрій"}
 };
 const t2=k=>((I2[lang]||I2.da)[k]||I2.da[k]||k);
 let todayByReason={};
@@ -519,6 +519,21 @@ window._toastTimer=setTimeout(()=>{el.style.opacity='0';el.style.pointerEvents='
 window.addEventListener('kassation:synced',updatePendBadge);
 window.addEventListener('kassation:synced',()=>{refreshToday();checkWarn()});
 $('#histbtn').onclick=openHist;
+async function openStats(per){
+const p=$('#panel');p.style.display='flex';
+const dn=deptName(dept);
+const rows=(await window.KassationQueue.getAllRecords(100000)).filter(r=>r.department===dn);
+const now=Date.now(),d0=new Date();d0.setHours(0,0,0,0);
+const from=per==='d1'?d0.getTime():per==='d7'?now-7*864e5:0;
+const mine=rows.filter(r=>r.ts>=from);const c={};
+mine.forEach(r=>String(r.reason||'').split(';').filter(Boolean).forEach(k=>{c[k]=(c[k]||0)+1}));
+const list=Object.entries(c).sort((a,b)=>b[1]-a[1]);const mx=list.length?list[0][1]:1;
+const tabs=['d1','d7','dall'].map(k=>`<button class="mmbtn${k===per?' on':''}" data-p="${k}">${t2(k)}</button>`).join(' ');
+const bars=list.length?list.map(([k,n])=>`<div class="sbar"><div class="sl">${t(k)}</div><div class="st"><div class="sf" style="width:${Math.max(4,Math.round(n/mx*100))}%"></div></div><div class="sn">${n}</div></div>`).join(''):`<p style="color:var(--mut);text-align:center;margin:28px 0">${t2('none')}</p>`;
+p.innerHTML=`<div class="pcard"><div class="row2"><h3>${t2('stats')} · ${dn}</h3><button class="backbtn" id="lc">${t('close')}</button></div><div class="row2" style="justify-content:flex-start;flex-wrap:wrap">${tabs}<span style="color:var(--mut);font-size:13px;margin-left:6px">${mine.length} ${t2('tot')}</span></div>${bars}<div style="color:var(--mut);font-size:12px;margin-top:10px">${t2('devnote')}</div></div>`;
+$('#lc').onclick=()=>p.style.display='none';
+p.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>openStats(b.dataset.p));
+}
 async function openHist(){
 const p=$('#panel');p.style.display='flex';
 p.innerHTML=`<div class="pcard"><div class="row2"><h3>${t('logtitle')}</h3><button class="backbtn" id="lc">${t('close')}</button></div><div id="ltbl">…</div><div class="row2" style="margin-top:10px"><span></span><button class="btn" id="lex">${t('export')}</button></div></div>`;
