@@ -46,6 +46,8 @@ main{flex:1;display:flex;flex-direction:column;padding:4px 16px 16px;overflow:au
 .tile:active{transform:scale(.96);background:var(--acc);color:var(--acc-ink)}
 .reason{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:22px 8px;text-align:center;font-size:18px;font-weight:700;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
 .reason .ic{font-size:28px}
+.grid.rfill{align-content:stretch;grid-auto-rows:minmax(64px,1fr);min-height:0}.rfill .reason{min-height:0;padding:6px 8px;font-size:clamp(14px,2.5vh,18px)}.rfill .reason .ic{font-size:clamp(20px,4vh,28px)}
+@media(max-height:700px){.grid.fill{grid-auto-rows:minmax(56px,1fr)}.grid.fill .tile{padding:6px;font-size:15px}.grid.fill .tile .ti{font-size:26px}header{padding-top:calc(6px + env(safe-area-inset-top,0px));padding-bottom:6px}.vgrid{gap:8px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}.vgrid button{min-height:44px;padding:8px 6px;font-size:14px}.grid{gap:8px}.tile{padding:10px 6px}.backbtn{padding:6px 12px}}
 .reason{position:relative}.reason.sel{border-color:var(--acc);background:var(--sel-bg)}.reason.sel::after{content:"✓";position:absolute;top:6px;right:10px;color:var(--acc);font-size:20px;font-weight:800}
 .mmbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer}.mmbtn.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .savebar{position:sticky;bottom:0;padding:10px 0 4px;background:linear-gradient(transparent,var(--bg) 30%)}.savebar .btn{width:100%;font-size:18px;padding:16px}.savebar .btn:disabled{opacity:.35}
@@ -480,7 +482,7 @@ function screenAndet(){
 function screenReason(){
 multiMode=false;
 const m=$('#main');
-m.innerHTML=`<div class="backbar"><button class="backbtn" id="b2">${t('back')}</button>${size&&size.length&&!(curArt&&curArt.andet)?`<button class="mmbtn" id="lk" style="margin-left:auto">🔒 ${t('lockvar')}</button>`:''}<button class="mmbtn" id="mm" style="margin-left:${size&&size.length&&!(curArt&&curArt.andet)?'8px':'auto'}">＋ ${t('multi')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${tArt(art)}</b>${size&&size.length?' · '+entryLabel(size):''} · ${t('choose_reason')}</div><div class="grid g3" id="g"></div><div class="savebar" id="sb" style="display:none"><button class="btn" id="sv" disabled>${t('save')}</button></div>`;
+m.innerHTML=`<div class="backbar"><button class="backbtn" id="b2">${t('back')}</button>${size&&size.length&&!(curArt&&curArt.andet)?`<button class="mmbtn" id="lk" style="margin-left:auto">🔒 ${t('lockvar')}</button>`:''}<button class="mmbtn" id="mm" style="margin-left:${size&&size.length&&!(curArt&&curArt.andet)?'8px':'auto'}">＋ ${t('multi')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${tArt(art)}</b>${size&&size.length?' · '+entryLabel(size):''} · ${t('choose_reason')}</div><div class="grid g3 rfill" id="g"></div><div class="savebar" id="sb" style="display:none"><button class="btn" id="sv" disabled>${t('save')}</button></div>`;
 $('#b2').onclick=()=>{if(curArt&&!curArt.andet)screenVar(curArt.nm,curArt.sizes,curArt.grp);else screenArt()};
 const g=$('#g'),sel=new Set(),sv=$('#sv');
 const upd=()=>{sv.disabled=!sel.size;sv.textContent=t('save')+(sel.size?' ('+sel.size+')':'')};
