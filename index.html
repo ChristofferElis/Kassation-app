@@ -253,11 +253,12 @@ function $(s){return document.querySelector(s)}
   const c=window.KASSATION_CONFIG||{},th=c.THEME||'';
   if(th)document.documentElement.setAttribute('data-theme',th);
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=(th==='blue'||th==='inv')?'#00005a':(th==='light'||th==='mix')?'#ffffff':'#10202a';
-  const src=(th==='blue'||th==='inv')?(c.LOGO_HVID||'logo-hvid.svg'):(c.LOGO_FARVE||'logo.svg');
-  const lg=document.getElementById('logo');if(!lg||!src)return;
+  const list=(th==='blue'||th==='inv')?[c.LOGO_HVID||'logo-hvid.svg']:[c.LOGO_FARVE||'logo.svg','logo.svg','logo.jpg'];
+  const lg=document.getElementById('logo');if(!lg)return;
+  let i=0;
   lg.onload=()=>lg.classList.add('on');
-  lg.onerror=()=>{lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
-  lg.src=src;
+  lg.onerror=()=>{i++;if(i<list.length){lg.src=list[i];return}lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
+  lg.src=list[0];
 })();
 const t=k=>(T[lang][k]||T.da[k]||k);
 async function updatePendBadge(){
