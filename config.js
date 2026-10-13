@@ -15,7 +15,7 @@ window.KASSATION_CONFIG = {
     // Afdelinger der er LIVE. Står der noget her, behandles alle andre afdelinger som TEST: de kan registrere som normalt
   // (med et orange TEST-mærke), men registreringerne sendes aldrig til flowet/SharePoint. Tom liste = alle afdelinger er live.
   // Afdelingsnøgler: plant_hil (Hillerød), plant_var (Varde), plant_hol (Holbæk), plant_ish (Ishøj), plant_karl (Karlslunde) osv.
-  LIVE_DEPTS: ["ingen"],
+  LIVE_DEPTS: ["ingen"], 
 
    THEME: ""
 };
