@@ -103,4 +103,14 @@ async function clearAll() {
   });
 }
 
-window.KassationQueue = { addRecord, markSynced, getPending, getAllRecords, deleteIfPending, clearAll };
+async function deleteRecord(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+window.KassationQueue = { deleteRecord, addRecord, markSynced, getPending, getAllRecords, deleteIfPending, clearAll };
