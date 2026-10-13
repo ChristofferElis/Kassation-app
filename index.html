@@ -17,7 +17,7 @@ body{background:var(--bg);color:var(--ink);font:16px/1.3 var(--font);display:fle
 header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;flex:none;padding-top:calc(12px + env(safe-area-inset-top,0px));background:var(--hdr-bg);color:var(--hdr-ink);border-bottom:1px solid var(--hdr-line)}
 .hbrand{display:flex;align-items:center;gap:14px;min-width:0}
 .logo{height:30px;width:auto;display:none}.logo.on{display:block}.logoph{display:none;height:30px;padding:0 12px;border:1px dashed var(--mut);border-radius:6px;color:var(--mut);font-size:12px;align-items:center}
-.logoph.on{display:flex}html:not([data-theme]) .logo.on{background:#fff;height:38px;padding:6px 12px;border-radius:9px;box-sizing:border-box}html:not([data-theme]) .logoph{background:#fff;color:#4f657a;border:0;height:38px;border-radius:9px}.hbrand h1{margin:0}.logo.on~h1,.logoph.on~h1{border-left:1px solid var(--hdr-line);padding-left:14px}
+.testpill{background:#ff7300;color:#fff;border-radius:7px;padding:3px 9px;font-size:12px;font-weight:800;letter-spacing:.5px;white-space:nowrap}.logoph.on{display:flex}html:not([data-theme]) .logo.on{background:#fff;height:38px;padding:6px 12px;border-radius:9px;box-sizing:border-box}html:not([data-theme]) .logoph{background:#fff;color:#4f657a;border:0;height:38px;border-radius:9px}.hbrand h1{margin:0}.logo.on~h1,.logoph.on~h1{border-left:1px solid var(--hdr-line);padding-left:14px}
 header h1{font-size:16px;margin:0}
 @media(max-width:480px){header{flex-wrap:wrap;row-gap:6px}}
 .hright{display:flex;gap:6px;align-items:center}
@@ -275,8 +275,10 @@ const lw=$('#langs');lw.innerHTML='';
 LANGS.forEach(l=>{const b=document.createElement('button');b.textContent=l.toUpperCase();b.className=l===lang?'on':'';b.onclick=()=>{lang=l;render()};lw.appendChild(b)});
 renderCrumb();
 }
+const isTestDept=k=>{const L=(window.KASSATION_CONFIG||{}).LIVE_DEPTS;return !!(k&&L&&L.length&&!L.includes(k))};
+function updTest(){const h=$('#h-title');if(!h)return;let p=$('#testpill');const on=isTestDept(dept);if(on&&!p){p=document.createElement('span');p.id='testpill';p.className='testpill';p.textContent='TEST';h.after(p)}if(p)p.style.display=on?'':'none'}
 function deptName(k){const d=DEPTS.find(x=>x[0]===k);return d?d[1]:k}
-function renderCrumb(){
+function renderCrumb(){updTest();
 drawDbar();
 const c=$('#crumb');
 if(!dept){c.innerHTML='';return}
@@ -492,7 +494,7 @@ sv.onclick=()=>{if(sel.size)confirmSave(REASONS.map(r=>r[0]).filter(k=>sel.has(k
 drawDbar();
 }
 async function confirmSave(reasonKey,extra){
-const rec={ts:Date.now(),cid:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2,10),lang,department:deptName(dept),category:cat,article:art,variant:(size&&size[0])||'',size:(size&&size[1])||'',dimension:(size&&size[2])||'',color:(size&&size[3])||'',customer:(size&&size[4])||'',reason:reasonKey,...(extra||{})};
+const rec={ts:Date.now(),cid:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2,10),lang,department:deptName(dept),dk:dept,test:isTestDept(dept),category:cat,article:art,variant:(size&&size[0])||'',size:(size&&size[1])||'',dimension:(size&&size[2])||'',color:(size&&size[3])||'',customer:(size&&size[4])||'',reason:reasonKey,...(extra||{})};
 const rid=await window.KassationQueue.addRecord(rec);
 refreshToday();
 window.KassationSync.flushQueue();setTimeout(()=>window.KassationSync.flushQueue(),4300);
@@ -525,11 +527,11 @@ const rows=await window.KassationQueue.getAllRecords(300);
 const pendCount=rows.filter(r=>!r.synced).length;
 const pendHtml=pendCount?`<div class="pending">${t('pending').replace('{n}',pendCount)}</div>`:'';
 $('#ltbl').innerHTML=pendHtml+(rows.length?`<table><tr><th>${t('time')}</th><th>Afd.</th><th>${t('kat')}</th><th>${t('art')}</th><th>${t('var')}</th><th>${t('aars')}</th><th>${t('synced')}</th></tr>`+
-rows.map(r=>`<tr><td>${new Date(r.ts).toLocaleString()}</td><td>${r.department||''}</td><td>${t(r.category)}</td><td>${tArt(r.article)}</td><td>${entryLabel([r.variant,r.size,r.dimension,r.color,r.customer])}</td><td>${rl(r.reason)}</td><td>${r.synced?t('yes'):t('no')}</td></tr>`).join('')+`</table>`:'');
+rows.map(r=>`<tr><td>${new Date(r.ts).toLocaleString()}</td><td>${r.department||''}</td><td>${t(r.category)}</td><td>${tArt(r.article)}</td><td>${entryLabel([r.variant,r.size,r.dimension,r.color,r.customer])}</td><td>${rl(r.reason)}</td><td>${r.test?'Test':(r.synced?t('yes'):t('no'))}</td></tr>`).join('')+`</table>`:'');
 $('#lex').onclick=()=>{
 const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
 const da=window.daLabel||(x=>x); // altid danske tekster i eksporten, uanset valgt sprog
-const csv='Tidspunkt;Afdeling;Kategori;Artikel;Variant;Størrelse;Dimension;Farve;Kunde;Årsag;Kommentar;Foto;Sendt\n'+rows.map(r=>[new Date(r.ts).toLocaleString('da-DK'),r.department,da(r.category),r.article,r.variant,r.size,r.dimension,r.color,r.customer,da(r.reason),r.comment||'',r.photo?'Ja':'Nej',r.synced?'Ja':'Nej'].map(q).join(';')).join('\r\n');
+const csv='Tidspunkt;Afdeling;Kategori;Artikel;Variant;Størrelse;Dimension;Farve;Kunde;Årsag;Kommentar;Foto;Sendt\n'+rows.map(r=>[new Date(r.ts).toLocaleString('da-DK'),r.department,da(r.category),r.article,r.variant,r.size,r.dimension,r.color,r.customer,da(r.reason),r.comment||'',r.photo?'Ja':'Nej',(r.test?'Test':(r.synced?'Ja':'Nej'))].map(q).join(';')).join('\r\n');
 const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}); // BOM, så Excel viser æ, ø og å korrekt
 const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kasseringer.csv';a.click();
 };
