@@ -37,7 +37,7 @@ main{flex:1;display:flex;flex-direction:column;padding:4px 16px 16px;overflow:au
 @media(max-width:620px){.g3{grid-template-columns:repeat(2,1fr)}}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 8px;text-align:center;font-size:17px;font-weight:700;min-height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .grid.fill{grid-template-columns:repeat(var(--cw),1fr);align-content:stretch;grid-auto-rows:minmax(84px,1fr);min-height:0}
-.grid.fill .tile{min-height:0;padding:12px}
+.grid.fill .tile{min-height:0;padding:12px}.grid.fill.dense{grid-auto-rows:minmax(60px,1fr);gap:10px}.tile.sm{font-size:16px;padding:6px 8px}
 .grid.fill .tile .ti{font-size:34px;line-height:1.3}
 .gc{display:block;margin-top:6px;font-size:15px;font-weight:600;opacity:.6}
 .tile.mid{font-size:22px}.tile.mid .ti{font-size:44px;line-height:1.3}
@@ -47,7 +47,7 @@ main{flex:1;display:flex;flex-direction:column;padding:4px 16px 16px;overflow:au
 .reason{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:22px 8px;text-align:center;font-size:18px;font-weight:700;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
 .reason .ic{font-size:28px}
 .grid.rfill{align-content:stretch;grid-auto-rows:minmax(64px,1fr);min-height:0}.rfill .reason{min-height:0;padding:6px 8px;font-size:clamp(14px,2.5vh,18px)}.rfill .reason .ic{font-size:clamp(20px,4vh,28px)}
-@media(max-height:700px){.grid.fill{grid-auto-rows:minmax(56px,1fr)}.grid.fill .tile{padding:6px;font-size:15px}.grid.fill .tile .ti{font-size:26px}header{padding-top:calc(6px + env(safe-area-inset-top,0px));padding-bottom:6px}.vgrid{gap:8px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}.vgrid button{min-height:44px;padding:8px 6px;font-size:14px}.grid{gap:8px}.tile{padding:10px 6px}.backbtn{padding:6px 12px}}
+@media(max-height:700px){.grid.fill{grid-auto-rows:minmax(56px,1fr)}.grid.fill.dense{grid-auto-rows:minmax(40px,1fr);gap:6px}.tile.sm{font-size:14px;padding:3px 6px}.grid.fill .tile{padding:6px;font-size:15px}.grid.fill .tile .ti{font-size:26px}header{padding-top:calc(6px + env(safe-area-inset-top,0px));padding-bottom:6px}.vgrid{gap:8px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}.vgrid button{min-height:44px;padding:8px 6px;font-size:14px}.grid{gap:8px}.tile{padding:10px 6px}.backbtn{padding:6px 12px}}
 .reason{position:relative}.reason.sel{border-color:var(--acc);background:var(--sel-bg)}.reason.sel::after{content:"✓";position:absolute;top:6px;right:10px;color:var(--acc);font-size:20px;font-weight:800}
 .mmbtn{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer}.mmbtn.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .savebar{position:sticky;bottom:0;padding:10px 0 4px;background:linear-gradient(transparent,var(--bg) 30%)}.savebar .btn{width:100%;font-size:18px;padding:16px}.savebar .btn:disabled{opacity:.35}
@@ -321,9 +321,10 @@ const varGroups=nm=>(VAR_GROUPS[dept]&&VAR_GROUPS[dept][cat]&&VAR_GROUPS[dept][c
 const grpIdx=(G,e)=>{const i=G.findIndex(([n,f])=>f(e));return i<0?G.length-1:i};
 function fillGrid(g,n){ // fliser fylder mere, jo færre der er; kolonner følger skærmbredden via CSS (virker også ved drejning)
 g.classList.add('fill');
-g.style.setProperty('--cw',n<=3?n:n===4?2:3);
+if(n>12)g.classList.add('dense');
+g.style.setProperty('--cw',n<=3?n:n===4?2:n>12?4:3);
 g.style.setProperty('--cn',n<=2?1:2);
-return n<=3?'big':n<=6?'mid':'';
+return n<=3?'big':n<=6?'mid':n>12?'sm':'';
 }
 function screenCats(){
 cat=null;art=null;size=null;curArt=null;lockedSize=null;renderCrumb();
@@ -380,10 +381,11 @@ if(G&&grp===undefined)return screenGrp(nm,sizes,G);
 curArt={nm,sizes,grp};art=null;size=null;lockedSize=null;renderCrumb();
 const items=G?sizes.filter(e=>G[grpIdx(G,e)][0]===grp):sizes;
 const m=$('#main');
-m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${tArt(nm)}</b>${G?' · '+tArt(grp):''} · ${t('choose_var')}</div><div class="vgrid" id="vg"></div>`;
+m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${tArt(nm)}</b>${G?' · '+tArt(grp):''} · ${t('choose_var')}</div><div class="${items.length<=24?'grid':'vgrid'}" id="vg"></div>`;
 $('#b1').onclick=G?()=>screenVar(nm,sizes):screenArt;
 const g=$('#vg');
-items.forEach(e=>{const b=document.createElement('button');b.textContent=entryLabel(e);b.onclick=()=>{art=nm;size=e;screenReason()};g.appendChild(b)});
+const few=items.length<=24,vsz=few?fillGrid(g,items.length):'';
+items.forEach(e=>{const b=document.createElement(few?'div':'button');if(few)b.className='tile '+vsz;b.textContent=entryLabel(e);b.onclick=()=>{art=nm;size=e;screenReason()};g.appendChild(b)});
 }
 let multiMode=false;
 
