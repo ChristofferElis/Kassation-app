@@ -2,7 +2,7 @@
 <html lang="da">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Kassationsregistrering</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.json">
@@ -12,7 +12,9 @@
 <style>
 :root{--bg:#10202a;--card:#16303d;--ink:#eef4f7;--mut:#8fa9b5;--line:#234453;--acc:#00b2a9;--r:#e5544c;--y:#e6a417;--g:#36b36b;--acc-ink:var(--acc-ink);--sel-bg:var(--sel-bg);--press-bg:#3a1d1c;--deep:#0c1a22;--deep2:#0e2129;--overlay:#0b161ccc;--overlay2:rgba(5,12,16,.88);--pend-bg:#3a2c0e;--warn-bg:#3a1d1c;--warn-ink:#f3a7a2;--badge-ink:#2a1d00;--sw1-bg:#3d3208;--sw1-ink:#ffd98a;--sw2-bg:#471a18;--sw2-ink:#ffb4ae;--hdr-bg:transparent;--hdr-ink:var(--ink);--hdr-line:transparent;--font:"Segoe UI",system-ui,Arial,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
-html,body{height:100%;margin:0}
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;-webkit-touch-callout:none;-webkit-text-size-adjust:100%}
+body{position:fixed;inset:0;width:100%}
+main,.pcard,.refcard{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 body{background:var(--bg);color:var(--ink);font:16px/1.3 var(--font);display:flex;flex-direction:column}
 header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;flex:none;padding-top:calc(12px + env(safe-area-inset-top,0px));background:var(--hdr-bg);color:var(--hdr-ink);border-bottom:1px solid var(--hdr-line)}
 .hbrand{display:flex;align-items:center;gap:14px;min-width:0}
@@ -261,6 +263,14 @@ function $(s){return document.querySelector(s)}
   lg.onload=()=>lg.classList.add('on');
   lg.onerror=()=>{i++;if(i<list.length){lg.src=list[i];return}lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
   lg.src=list[0];
+})();
+/* Fasthold billedet som på en computerskærm: ingen træk i siden, ingen pull-to-refresh, ingen zoom med fingrene.
+   Kun de områder der selv kan rulle (hovedområdet, paneler, tekstfelter) bevæger sig, og kun hvis indholdet er for højt. */
+(function(){
+  const ok=el=>el&&el.closest&&el.closest('main,.pcard,.refcard,textarea,input');
+  document.addEventListener('touchmove',e=>{if(e.touches.length>1||!ok(e.target))e.preventDefault()},{passive:false});
+  ['gesturestart','gesturechange','gestureend'].forEach(g=>document.addEventListener(g,e=>e.preventDefault()));
+  document.addEventListener('dblclick',e=>e.preventDefault());
 })();
 const t=k=>(T[lang][k]||T.da[k]||k);
 async function updatePendBadge(){
