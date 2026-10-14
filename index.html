@@ -279,7 +279,7 @@ function $(s){return document.querySelector(s)}
   lg.onerror=()=>{i++;if(i<list.length){lg.src=list[i];return}lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
   lg.src=list[0];
 })();
-const APP_VERSION='2026.10.14-h'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
+const APP_VERSION='2026.10.14-i'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
 /* Lyd og vibration ved gennemført registrering (slå fra i config.js: LYD:false / VIBRATION:false) */
 let _ac=null;
 function unlockAudio(){try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume()}catch(e){}}
@@ -620,8 +620,8 @@ $('#lc').onclick=()=>p.style.display='none';
 const rows=await window.KassationQueue.getAllRecords(300);
 const pendCount=rows.filter(r=>!r.synced).length;
 const pendHtml=pendCount?`<div class="pending">${t('pending').replace('{n}',pendCount)}</div>`:'';
-$('#ltbl').innerHTML=pendHtml+(rows.length?`<table><tr><th>${t('time')}</th><th>Afd.</th><th>${t('kat')}</th><th>${t('art')}</th><th>${t('var')}</th><th>${t('aars')}</th><th>${t('synced')}</th></tr>`+
-rows.map(r=>`<tr><td>${new Date(r.ts).toLocaleString()}</td><td>${r.department||''}</td><td>${t(r.category)}</td><td>${tArt(r.article)}${Qn(r)>1?' ×'+Qn(r):''}</td><td>${entryLabel([r.variant,r.size,r.dimension,r.color,r.customer])}</td><td>${rl(r.reason)}</td><td>${r.test?'Test':(r.synced?t('yes'):t('no'))}</td></tr>`).join('')+`</table>`:'');
+$('#ltbl').innerHTML=pendHtml+(rows.length?`<table><tr><th>${t('time')}</th><th>Afd.</th><th>${t('kat')}</th><th>${t('art')}</th><th>${t('var')}</th><th>${t('aars')}</th><th>${t2('qty')}</th><th>${t('synced')}</th></tr>`+
+rows.map(r=>`<tr><td>${new Date(r.ts).toLocaleString()}</td><td>${r.department||''}</td><td>${t(r.category)}</td><td>${tArt(r.article)}</td><td>${entryLabel([r.variant,r.size,r.dimension,r.color,r.customer])}</td><td>${rl(r.reason)}</td><td>${Qn(r)}</td><td>${r.test?'Test':(r.synced?t('yes'):t('no'))}</td></tr>`).join('')+`</table>`:'');
 $('#lex').onclick=()=>{
 const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
 const da=window.daLabel||(x=>x); // altid danske tekster i eksporten, uanset valgt sprog
