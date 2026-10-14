@@ -19,6 +19,9 @@ window.KASSATION_CONFIG = {
      // Lyd og vibration ved gennemført registrering. Sæt til false for at slå fra. (Vibration virker på Android, ikke på iPad.)
   LYD: true,
   VIBRATION: true,
-
+    // Support-knap på forsiden. Udfyld mindst én af linjerne (tom = ingen knap). Kollegerne kan kontakte jer med e-mailen,
+  // også selv om tabletten ikke har en mailapp (adressen vises som tekst og kan kopieres).
+  SUPPORT_NAME: "Christoffer Christensen",
+  SUPPORT_EMAIL: "Christoffer.Christensen@Elis.com",
    THEME: ""
 };
