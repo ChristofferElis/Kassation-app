@@ -13,7 +13,8 @@
   async function sendRecord(record) {
     const headers = { 'Content-Type': 'application/json' };
     if (cfg.API_KEY) headers['x-api-key'] = cfg.API_KEY;
-    const { id, synced, dk, test, ...payload } = record; // id/synced/dk/test er kun til lokalt brug
+    const { id, synced, dk, test, qty, ...payload } = record; // id/synced/dk/test/qty er kun til lokalt brug
+    const n = Math.max(1, Math.min(parseInt(qty) || 1, 10000)); // antal: sendes som n ens rækker (samme flow, ingen ny kolonne)
     // Send læsbar dansk tekst til SharePoint (fx "Duge", "Misfarvet") i stedet for tekniske nøgler.
     payload.cid = record.cid || ('t' + record.ts + '-' + id); // unikt id pr. registrering, så flowet kan afvise dubletter
     const toDa = window.daLabel || (x => x);
@@ -25,12 +26,17 @@
       payload.photoName = 'andet-' + record.ts + '.jpg';
       payload.photo = payload.photo.split(',')[1];
     } else { payload.photo = ''; payload.photoName = ''; }
-    const res = await fetch(cfg.FLOW_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok && res.status !== 409) throw new Error('Sync fejlede: ' + res.status); // 409 = findes allerede i listen → regnes som sendt
+    // SEND_ANTAL_FELT: true → ét kald med feltet 'quantity' (kræver kolonnen Antal i listen og en tilpasning af flowet). Ellers sendes n ens rækker.
+    if (cfg.SEND_ANTAL_FELT === true) payload.quantity = n;
+    const rows = cfg.SEND_ANTAL_FELT === true ? 1 : n;
+    const postOne = async (i) => {
+      const body = rows > 1 ? { ...payload, cid: payload.cid + '-' + (i + 1) } : payload; // fast cid pr. række → gensendelse giver 409 og dubleres ikke
+      const res = await fetch(cfg.FLOW_URL, { method: 'POST', headers, body: JSON.stringify(body) });
+      if (!res.ok && res.status !== 409) throw new Error('Sync fejlede: ' + res.status); // 409 = findes allerede i listen → regnes som sendt
+    };
+    for (let i = 0; i < rows; i += 4) { // 4 ad gangen, så flowet ikke overbelastes
+      await Promise.all(Array.from({ length: Math.min(4, rows - i) }, (_, j) => postOne(i + j)));
+    }
   }
 
   // Nulstilling ved go-live: ændrer I RESET_TOKEN i config.js, tømmer hver enhed sine lokale (test)registreringer
@@ -62,7 +68,13 @@
   }
   const ready = resetIfNeeded().then(handleTest);
 
+  let flushing = false, again = false; // kun én afsendelse ad gangen (store antal tager tid); nye kald køres bagefter
   async function flushQueue() {
+    if (flushing) { again = true; return; }
+    flushing = true;
+    try { do { again = false; await flushInner(); } while (again); } finally { flushing = false; }
+  }
+  async function flushInner() {
     await ready; // nulstilling først, derefter evt. afsendelse
     await handleTest(); // testregistreringer markeres lokalt, men sendes aldrig
     if (!navigator.onLine || !configured()) return;
