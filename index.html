@@ -19,7 +19,10 @@ body{background:var(--bg);color:var(--ink);font:16px/1.3 var(--font);display:fle
 header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;flex:none;padding-top:calc(12px + env(safe-area-inset-top,0px));background:var(--hdr-bg);color:var(--hdr-ink);border-bottom:1px solid var(--hdr-line)}
 .hbrand{display:flex;align-items:center;gap:14px;min-width:0}
 .logo{height:30px;width:auto;display:none}.logo.on{display:block}.logoph{display:none;height:30px;padding:0 12px;border:1px dashed var(--mut);border-radius:6px;color:var(--mut);font-size:12px;align-items:center}
-.sbar{display:grid;grid-template-columns:minmax(90px,34%) 1fr 34px;gap:10px;align-items:center;margin:9px 0;font-size:14px}.sbar .sl{font-weight:600;overflow-wrap:anywhere}.sbar .st{height:18px;background:var(--deep);border-radius:9px;overflow:hidden}.sbar .sf{height:100%;background:var(--acc);border-radius:9px}.sbar .sn{text-align:right;font-weight:800}.fver{color:var(--mut);font-size:11px;opacity:.8}.photonote{color:var(--mut);font-size:13px;line-height:1.35;text-align:center;margin:-4px 0 2px}.testpill{background:#ff7300;color:#fff;border-radius:7px;padding:3px 9px;font-size:12px;font-weight:800;letter-spacing:.5px;white-space:nowrap}.logoph.on{display:flex}html:not([data-theme]) .logo.on{background:#fff;height:38px;padding:6px 12px;border-radius:9px;box-sizing:border-box}html:not([data-theme]) .logoph{background:#fff;color:#4f657a;border:0;height:38px;border-radius:9px}.hbrand h1{margin:0}.logo.on~h1,.logoph.on~h1{border-left:1px solid var(--hdr-line);padding-left:14px}
+.sbar{display:grid;grid-template-columns:minmax(90px,34%) 1fr 34px;gap:10px;align-items:center;margin:9px 0;font-size:14px}.sbar .sl{font-weight:600;overflow-wrap:anywhere}.sbar .st{height:18px;background:var(--deep);border-radius:9px;overflow:hidden}.sbar .sf{height:100%;background:var(--acc);border-radius:9px}.sbar .sn{text-align:right;font-weight:800}.fver{color:var(--mut);font-size:11px;opacity:.8}.photonote{color:var(--mut);font-size:13px;line-height:1.35;text-align:center;margin:-4px 0 2px}.reg{font-family:'Segoe UI',system-ui,sans-serif;color:var(--mut);font-size:12px;margin:2px 0}.grid.dgrid{grid-template-columns:repeat(4,1fr);flex:1;min-height:0;align-content:stretch;grid-auto-rows:minmax(48px,1fr);gap:10px}.dgrid .tile{min-height:0;padding:6px;font-size:18px}.supbtn{min-height:44px;padding:6px 16px;font-size:15px}
+@media(max-width:900px){.grid.dgrid{grid-template-columns:repeat(3,1fr)}}@media(max-width:560px){.grid.dgrid{grid-template-columns:repeat(2,1fr)}}
+.sup h3{margin:0 0 6px}.sup .who{font-size:22px;font-weight:800;margin:8px 0 2px}.sup .mail{font-size:20px;word-break:break-all;margin:2px 0 12px}.sup .diag{font-size:12px;color:var(--mut);background:var(--deep);border-radius:10px;padding:8px 10px;margin:12px 0;word-break:break-word}.sup .btns{display:flex;gap:10px;flex-wrap:wrap}.sup a.mmbtn{text-decoration:none;display:inline-flex;align-items:center}
+.testpill{background:#ff7300;color:#fff;border-radius:7px;padding:3px 9px;font-size:12px;font-weight:800;letter-spacing:.5px;white-space:nowrap}.logoph.on{display:flex}html:not([data-theme]) .logo.on{background:#fff;height:38px;padding:6px 12px;border-radius:9px;box-sizing:border-box}html:not([data-theme]) .logoph{background:#fff;color:#4f657a;border:0;height:38px;border-radius:9px}.hbrand h1{margin:0}.logo.on~h1,.logoph.on~h1{border-left:1px solid var(--hdr-line);padding-left:14px}
 header h1{font-size:16px;margin:0}
 @media(max-width:480px){header{flex-wrap:wrap;row-gap:6px}}
 .hright{display:flex;gap:6px;align-items:center}
@@ -266,7 +269,7 @@ function $(s){return document.querySelector(s)}
   lg.onerror=()=>{i++;if(i<list.length){lg.src=list[i];return}lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
   lg.src=list[0];
 })();
-const APP_VERSION='2026.10.14-a'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
+const APP_VERSION='2026.10.14-b'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
 /* Lyd og vibration ved gennemført registrering (slå fra i config.js: LYD:false / VIBRATION:false) */
 let _ac=null;
 function unlockAudio(){try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume()}catch(e){}}
@@ -323,9 +326,10 @@ const cv=$('#chvar');if(cv)cv.onclick=()=>screenVar(curArt.nm,curArt.sizes,curAr
 function screenDept(){
 dept=null;cat=null;art=null;size=null;curArt=null;lockedSize=null;renderCrumb();
 const m=$('#main');
-m.innerHTML=`<div class="crumb" style="padding:0 0 8px">${t('sub_dept')}</div>
-<div style="font-family:'Segoe UI',system-ui,sans-serif;color:var(--mut);font-size:12px;margin:4px 0">Øst</div><div class="grid g2" id="gO"></div>
-<div style="font-family:'Segoe UI',system-ui,sans-serif;color:var(--mut);font-size:12px;margin:12px 0 4px">Vest</div><div class="grid g2" id="gV"></div>`;
+m.innerHTML=`<div class="crumb" style="padding:0 0 6px;justify-content:space-between;flex-wrap:nowrap"><span>${t('sub_dept')}</span>${supportOn()?`<button class="mmbtn supbtn" id="bsup">❓ ${t2('support')}</button>`:''}</div>
+<div class="reg">Øst</div><div class="grid dgrid" id="gO"></div>
+<div class="reg" style="margin-top:8px">Vest</div><div class="grid dgrid" id="gV"></div>`;
+if($('#bsup'))$('#bsup').onclick=openSupport;
 const gO=$('#gO'),gV=$('#gV');
 DEPTS.forEach(([k,nm,reg])=>{const d=document.createElement('div');d.className='tile';d.textContent=nm;d.onclick=()=>{dept=k;screenCats()};(reg==='øst'?gO:gV).appendChild(d)});
 }
@@ -432,12 +436,12 @@ function showRef(k,ic){
 }
 /* ---- Dagens tal, advarsel ved usendte, Andet med foto ---- */
 const I2={
-da:{today:"I dag",pcs:"stk",warn:"{n} ikke sendt – den ældste er {a} gammel. Tjek netforbindelsen.",min:"min.",hr:"t.",photo:"Tag billede",retake:"Tag nyt billede",cancel:"Annuller",comment:"Kort beskrivelse (valgfri)",photonote:"Fotografér kun tekstilet – undgå personer og kundeoplysninger.",stats:"Registrerede årsager",d1:"I dag",d7:"7 dage",dall:"Alle",none:"Ingen registreringer endnu",tot:"registreringer",devnote:"Kun denne enhed"},
-en:{today:"Today",pcs:"pcs",warn:"{n} not sent – the oldest is {a} old. Check the connection.",min:"min.",hr:"h",photo:"Take photo",retake:"Retake photo",cancel:"Cancel",comment:"Short description (optional)",photonote:"Photograph the textile only – avoid people and customer details.",stats:"Registered reasons",d1:"Today",d7:"7 days",dall:"All",none:"No registrations yet",tot:"registrations",devnote:"This device only"},
-pl:{today:"Dziś",pcs:"szt.",warn:"Niewysłane: {n} – najstarsze ma {a}. Sprawdź połączenie.",min:"min",hr:"godz.",photo:"Zrób zdjęcie",retake:"Zrób nowe zdjęcie",cancel:"Anuluj",comment:"Krótki opis (opcjonalnie)",photonote:"Fotografuj tylko tekstylia – unikaj osób i danych klientów.",stats:"Zarejestrowane przyczyny",d1:"Dziś",d7:"7 dni",dall:"Wszystkie",none:"Brak rejestracji",tot:"rejestracji",devnote:"Tylko to urządzenie"},
-ro:{today:"Azi",pcs:"buc.",warn:"{n} netrimise – cea mai veche are {a}. Verificați conexiunea.",min:"min",hr:"h",photo:"Fă o poză",retake:"Fă altă poză",cancel:"Anulează",comment:"Scurtă descriere (opțional)",photonote:"Fotografiați doar textilul – evitați persoanele și datele clienților.",stats:"Motive înregistrate",d1:"Azi",d7:"7 zile",dall:"Toate",none:"Nicio înregistrare încă",tot:"înregistrări",devnote:"Doar acest dispozitiv"},
-uk:{today:"Сьогодні",pcs:"шт.",warn:"Не надіслано: {n} – найстаріше {a}. Перевірте зв’язок.",min:"хв",hr:"год",photo:"Зробити фото",retake:"Зробити нове фото",cancel:"Скасувати",comment:"Короткий опис (необов’язково)",photonote:"Фотографуйте лише текстиль – уникайте людей та даних клієнтів.",stats:"Зареєстровані причини",d1:"Сьогодні",d7:"7 днів",dall:"Усі",none:"Ще немає записів",tot:"записів",devnote:"Лише цей пристрій"},
-fr:{today:"Aujourd’hui",pcs:"pcs",warn:"{n} non envoyé(s) – le plus ancien date de {a}. Vérifiez la connexion.",min:"min",hr:"h",photo:"Prendre une photo",retake:"Reprendre la photo",cancel:"Annuler",comment:"Courte description (facultatif)",photonote:"Photographiez uniquement le textile – évitez les personnes et les informations client.",stats:"Motifs enregistrés",d1:"Aujourd’hui",d7:"7 jours",dall:"Tous",none:"Aucun enregistrement pour le moment",tot:"enregistrements",devnote:"Cet appareil uniquement"}
+da:{today:"I dag",pcs:"stk",warn:"{n} ikke sendt – den ældste er {a} gammel. Tjek netforbindelsen.",min:"min.",hr:"t.",photo:"Tag billede",retake:"Tag nyt billede",cancel:"Annuller",comment:"Kort beskrivelse (valgfri)",photonote:"Fotografér kun tekstilet – undgå personer og kundeoplysninger.",support:"Support",supintro:"Oplever du en fejl, eller har du brug for vejledning eller et ønske til appen? Kontakt:",copy:"Kopiér mail",copied:"Kopieret",mail:"Send mail",unsent:"ikke sendt",diag:"Oplysninger til support",stats:"Registrerede årsager",d1:"I dag",d7:"7 dage",dall:"Alle",none:"Ingen registreringer endnu",tot:"registreringer",devnote:"Kun denne enhed"},
+en:{today:"Today",pcs:"pcs",warn:"{n} not sent – the oldest is {a} old. Check the connection.",min:"min.",hr:"h",photo:"Take photo",retake:"Retake photo",cancel:"Cancel",comment:"Short description (optional)",photonote:"Photograph the textile only – avoid people and customer details.",support:"Support",supintro:"Having a problem, need guidance or have a request for the app? Contact:",copy:"Copy email",copied:"Copied",mail:"Send email",unsent:"not sent",diag:"Info for support",stats:"Registered reasons",d1:"Today",d7:"7 days",dall:"All",none:"No registrations yet",tot:"registrations",devnote:"This device only"},
+pl:{today:"Dziś",pcs:"szt.",warn:"Niewysłane: {n} – najstarsze ma {a}. Sprawdź połączenie.",min:"min",hr:"godz.",photo:"Zrób zdjęcie",retake:"Zrób nowe zdjęcie",cancel:"Anuluj",comment:"Krótki opis (opcjonalnie)",photonote:"Fotografuj tylko tekstylia – unikaj osób i danych klientów.",support:"Pomoc",supintro:"Masz problem, potrzebujesz wskazówek lub masz propozycję dotyczącą aplikacji? Skontaktuj się:",copy:"Kopiuj e-mail",copied:"Skopiowano",mail:"Wyślij e-mail",unsent:"niewysłane",diag:"Informacje dla wsparcia",stats:"Zarejestrowane przyczyny",d1:"Dziś",d7:"7 dni",dall:"Wszystkie",none:"Brak rejestracji",tot:"rejestracji",devnote:"Tylko to urządzenie"},
+ro:{today:"Azi",pcs:"buc.",warn:"{n} netrimise – cea mai veche are {a}. Verificați conexiunea.",min:"min",hr:"h",photo:"Fă o poză",retake:"Fă altă poză",cancel:"Anulează",comment:"Scurtă descriere (opțional)",photonote:"Fotografiați doar textilul – evitați persoanele și datele clienților.",support:"Asistență",supintro:"Aveți o problemă, aveți nevoie de îndrumare sau o sugestie pentru aplicație? Contactați:",copy:"Copiază e-mailul",copied:"Copiat",mail:"Trimite e-mail",unsent:"netrimise",diag:"Informații pentru asistență",stats:"Motive înregistrate",d1:"Azi",d7:"7 zile",dall:"Toate",none:"Nicio înregistrare încă",tot:"înregistrări",devnote:"Doar acest dispozitiv"},
+uk:{today:"Сьогодні",pcs:"шт.",warn:"Не надіслано: {n} – найстаріше {a}. Перевірте зв’язок.",min:"хв",hr:"год",photo:"Зробити фото",retake:"Зробити нове фото",cancel:"Скасувати",comment:"Короткий опис (необов’язково)",photonote:"Фотографуйте лише текстиль – уникайте людей та даних клієнтів.",support:"Підтримка",supintro:"Проблема, потрібна допомога чи є побажання щодо застосунку? Зв’яжіться:",copy:"Копіювати e-mail",copied:"Скопійовано",mail:"Надіслати e-mail",unsent:"не надіслано",diag:"Дані для підтримки",stats:"Зареєстровані причини",d1:"Сьогодні",d7:"7 днів",dall:"Усі",none:"Ще немає записів",tot:"записів",devnote:"Лише цей пристрій"},
+fr:{today:"Aujourd’hui",pcs:"pcs",warn:"{n} non envoyé(s) – le plus ancien date de {a}. Vérifiez la connexion.",min:"min",hr:"h",photo:"Prendre une photo",retake:"Reprendre la photo",cancel:"Annuler",comment:"Courte description (facultatif)",photonote:"Photographiez uniquement le textile – évitez les personnes et les informations client.",support:"Assistance",supintro:"Un problème, besoin d’aide ou une suggestion pour l’application ? Contactez :",copy:"Copier l’e-mail",copied:"Copié",mail:"Envoyer un e-mail",unsent:"non envoyé(s)",diag:"Informations pour l’assistance",stats:"Motifs enregistrés",d1:"Aujourd’hui",d7:"7 jours",dall:"Tous",none:"Aucun enregistrement pour le moment",tot:"enregistrements",devnote:"Cet appareil uniquement"}
 };
 const t2=k=>((I2[lang]||I2.da)[k]||I2.da[k]||k);
 let todayByReason={};
@@ -549,6 +553,21 @@ window._toastTimer=setTimeout(()=>{el.style.opacity='0';el.style.pointerEvents='
 window.addEventListener('kassation:synced',updatePendBadge);
 window.addEventListener('kassation:synced',()=>{refreshToday();checkWarn()});
 $('#histbtn').onclick=openHist;
+const supportOn=()=>{const c=window.KASSATION_CONFIG||{};return !!(c.SUPPORT_EMAIL||c.SUPPORT_NAME||c.SUPPORT_PHONE)};
+async function openSupport(){
+const c=window.KASSATION_CONFIG||{},p=$('#panel');p.style.display='flex';
+let n=0;try{n=(await window.KassationQueue.getPending()).length}catch(e){}
+const diag=['v'+APP_VERSION,dept?deptName(dept):'-',lang.toUpperCase(),t2('unsent')+': '+n].join(' · ');
+const mail=c.SUPPORT_EMAIL||'';
+const href=mail?'mailto:'+mail+'?subject='+encodeURIComponent('Kassations-app')+'&body='+encodeURIComponent('\n\n---\n'+diag):'';
+p.innerHTML=`<div class="pcard sup"><div class="row2"><h3>${t2('support')}</h3><button class="backbtn" id="lc">${t('close')}</button></div><div>${t2('supintro')}</div>
+${c.SUPPORT_NAME?`<div class="who">${c.SUPPORT_NAME}</div>`:''}${c.SUPPORT_NOTE?`<div style="color:var(--mut)">${c.SUPPORT_NOTE}</div>`:''}
+${mail?`<div class="mail">${mail}</div>`:''}${c.SUPPORT_PHONE?`<div class="mail">☎ ${c.SUPPORT_PHONE}</div>`:''}
+<div class="btns">${mail?`<button class="mmbtn" id="cpy">${t2('copy')}</button><a class="mmbtn" href="${href}">✉ ${t2('mail')}</a>`:''}</div>
+<div class="diag">${t2('diag')}: ${diag}</div></div>`;
+$('#lc').onclick=()=>p.style.display='none';
+const cp=$('#cpy');if(cp)cp.onclick=async()=>{try{await navigator.clipboard.writeText(mail)}catch(e){const i=document.createElement('input');i.value=mail;document.body.appendChild(i);i.select();try{document.execCommand('copy')}catch(_){}i.remove()}cp.textContent='✓ '+t2('copied');setTimeout(()=>cp.textContent=t2('copy'),1800)};
+}
 async function openStats(per){
 const p=$('#panel');p.style.display='flex';
 const dn=deptName(dept);
