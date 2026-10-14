@@ -19,7 +19,7 @@ body{background:var(--bg);color:var(--ink);font:16px/1.3 var(--font);display:fle
 header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;flex:none;padding-top:calc(12px + env(safe-area-inset-top,0px));background:var(--hdr-bg);color:var(--hdr-ink);border-bottom:1px solid var(--hdr-line)}
 .hbrand{display:flex;align-items:center;gap:14px;min-width:0}
 .logo{height:30px;width:auto;display:none}.logo.on{display:block}.logoph{display:none;height:30px;padding:0 12px;border:1px dashed var(--mut);border-radius:6px;color:var(--mut);font-size:12px;align-items:center}
-.sbar{display:grid;grid-template-columns:minmax(90px,34%) 1fr 34px;gap:10px;align-items:center;margin:9px 0;font-size:14px}.sbar .sl{font-weight:600;overflow-wrap:anywhere}.sbar .st{height:18px;background:var(--deep);border-radius:9px;overflow:hidden}.sbar .sf{height:100%;background:var(--acc);border-radius:9px}.sbar .sn{text-align:right;font-weight:800}.testpill{background:#ff7300;color:#fff;border-radius:7px;padding:3px 9px;font-size:12px;font-weight:800;letter-spacing:.5px;white-space:nowrap}.logoph.on{display:flex}html:not([data-theme]) .logo.on{background:#fff;height:38px;padding:6px 12px;border-radius:9px;box-sizing:border-box}html:not([data-theme]) .logoph{background:#fff;color:#4f657a;border:0;height:38px;border-radius:9px}.hbrand h1{margin:0}.logo.on~h1,.logoph.on~h1{border-left:1px solid var(--hdr-line);padding-left:14px}
+.sbar{display:grid;grid-template-columns:minmax(90px,34%) 1fr 34px;gap:10px;align-items:center;margin:9px 0;font-size:14px}.sbar .sl{font-weight:600;overflow-wrap:anywhere}.sbar .st{height:18px;background:var(--deep);border-radius:9px;overflow:hidden}.sbar .sf{height:100%;background:var(--acc);border-radius:9px}.sbar .sn{text-align:right;font-weight:800}.fver{color:var(--mut);font-size:11px;opacity:.8}.photonote{color:var(--mut);font-size:13px;line-height:1.35;text-align:center;margin:-4px 0 2px}.testpill{background:#ff7300;color:#fff;border-radius:7px;padding:3px 9px;font-size:12px;font-weight:800;letter-spacing:.5px;white-space:nowrap}.logoph.on{display:flex}html:not([data-theme]) .logo.on{background:#fff;height:38px;padding:6px 12px;border-radius:9px;box-sizing:border-box}html:not([data-theme]) .logoph{background:#fff;color:#4f657a;border:0;height:38px;border-radius:9px}.hbrand h1{margin:0}.logo.on~h1,.logoph.on~h1{border-left:1px solid var(--hdr-line);padding-left:14px}
 header h1{font-size:16px;margin:0}
 @media(max-width:480px){header{flex-wrap:wrap;row-gap:6px}}
 .hright{display:flex;gap:6px;align-items:center}
@@ -143,6 +143,7 @@ html[data-theme="inv"] .tile:active,html[data-theme="inv"] .reason:active{backgr
 <div class="dbar" id="dbar" style="display:none"></div>
 <footer>
 <span id="f-count"></span>
+<span id="f-ver" class="fver"></span>
 <span class="net" id="netstat"></span>
 </footer>
 <div id="panel" class="panel" style="display:none"></div>
@@ -265,6 +266,18 @@ function $(s){return document.querySelector(s)}
   lg.onerror=()=>{i++;if(i<list.length){lg.src=list[i];return}lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
   lg.src=list[0];
 })();
+const APP_VERSION='2026.10.14-a'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
+/* Lyd og vibration ved gennemført registrering (slå fra i config.js: LYD:false / VIBRATION:false) */
+let _ac=null;
+function unlockAudio(){try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume()}catch(e){}}
+document.addEventListener('pointerdown',unlockAudio);
+function tone(f,t0,d,v){try{if(!_ac)return;const o=_ac.createOscillator(),g=_ac.createGain();o.type='sine';o.frequency.value=f;const n=_ac.currentTime+t0;g.gain.setValueAtTime(0.0001,n);g.gain.exponentialRampToValueAtTime(v,n+0.01);g.gain.exponentialRampToValueAtTime(0.0001,n+d);o.connect(g);g.connect(_ac.destination);o.start(n);o.stop(n+d+0.02)}catch(e){}}
+function vib(p){try{if(navigator.vibrate)navigator.vibrate(p)}catch(e){}}
+function feedback(kind){
+  const c=window.KASSATION_CONFIG||{};
+  if(c.LYD!==false){unlockAudio();if(kind==='ok'){tone(880,0,0.12,0.25);tone(1320,0.11,0.16,0.25)}else if(kind==='undo'){tone(520,0,0.12,0.2);tone(390,0.1,0.14,0.2)}else{tone(300,0,0.25,0.25)}}
+  if(c.VIBRATION!==false){vib(kind==='ok'?60:kind==='undo'?[30,40,30]:[80,60,80])}
+}
 /* Fasthold billedet som på en computerskærm: ingen træk i siden, ingen pull-to-refresh, ingen zoom med fingrene.
    Kun de områder der selv kan rulle (hovedområdet, paneler, tekstfelter) bevæger sig, og kun hvis indholdet er for højt. */
 (function(){
@@ -280,7 +293,7 @@ $('#pendbadge').style.display=p.length?'block':'none';$('#pendbadge').textConten
 }
 function renderHeader(){
 $('#h-title').textContent=t('title');
-$('#f-count').textContent=t('count').replace('{n}',todayCount);
+$('#f-count').textContent=t('count').replace('{n}',todayCount);$('#f-ver').textContent='v'+APP_VERSION;
 const net=navigator.onLine;$('#netstat').textContent=net?t('online'):t('offline');$('#netstat').className='net '+(net?'on':'off');
 $('#cfgwarn').innerHTML=window.KassationSync&&!window.KassationSync.configured()?`<div class="warn">${t('cfgwarn')}</div>`:'';
 updatePendBadge();checkWarn();
@@ -419,12 +432,12 @@ function showRef(k,ic){
 }
 /* ---- Dagens tal, advarsel ved usendte, Andet med foto ---- */
 const I2={
-da:{today:"I dag",pcs:"stk",warn:"{n} ikke sendt – den ældste er {a} gammel. Tjek netforbindelsen.",min:"min.",hr:"t.",photo:"Tag billede",retake:"Tag nyt billede",cancel:"Annuller",comment:"Kort beskrivelse (valgfri)",stats:"Registrerede årsager",d1:"I dag",d7:"7 dage",dall:"Alle",none:"Ingen registreringer endnu",tot:"registreringer",devnote:"Kun denne enhed"},
-en:{today:"Today",pcs:"pcs",warn:"{n} not sent – the oldest is {a} old. Check the connection.",min:"min.",hr:"h",photo:"Take photo",retake:"Retake photo",cancel:"Cancel",comment:"Short description (optional)",stats:"Registered reasons",d1:"Today",d7:"7 days",dall:"All",none:"No registrations yet",tot:"registrations",devnote:"This device only"},
-pl:{today:"Dziś",pcs:"szt.",warn:"Niewysłane: {n} – najstarsze ma {a}. Sprawdź połączenie.",min:"min",hr:"godz.",photo:"Zrób zdjęcie",retake:"Zrób nowe zdjęcie",cancel:"Anuluj",comment:"Krótki opis (opcjonalnie)",stats:"Zarejestrowane przyczyny",d1:"Dziś",d7:"7 dni",dall:"Wszystkie",none:"Brak rejestracji",tot:"rejestracji",devnote:"Tylko to urządzenie"},
-ro:{today:"Azi",pcs:"buc.",warn:"{n} netrimise – cea mai veche are {a}. Verificați conexiunea.",min:"min",hr:"h",photo:"Fă o poză",retake:"Fă altă poză",cancel:"Anulează",comment:"Scurtă descriere (opțional)",stats:"Motive înregistrate",d1:"Azi",d7:"7 zile",dall:"Toate",none:"Nicio înregistrare încă",tot:"înregistrări",devnote:"Doar acest dispozitiv"},
-uk:{today:"Сьогодні",pcs:"шт.",warn:"Не надіслано: {n} – найстаріше {a}. Перевірте зв’язок.",min:"хв",hr:"год",photo:"Зробити фото",retake:"Зробити нове фото",cancel:"Скасувати",comment:"Короткий опис (необов’язково)",stats:"Зареєстровані причини",d1:"Сьогодні",d7:"7 днів",dall:"Усі",none:"Ще немає записів",tot:"записів",devnote:"Лише цей пристрій"},
-fr:{today:"Aujourd’hui",pcs:"pcs",warn:"{n} non envoyé(s) – le plus ancien date de {a}. Vérifiez la connexion.",min:"min",hr:"h",photo:"Prendre une photo",retake:"Reprendre la photo",cancel:"Annuler",comment:"Courte description (facultatif)",stats:"Motifs enregistrés",d1:"Aujourd’hui",d7:"7 jours",dall:"Tous",none:"Aucun enregistrement pour le moment",tot:"enregistrements",devnote:"Cet appareil uniquement"}
+da:{today:"I dag",pcs:"stk",warn:"{n} ikke sendt – den ældste er {a} gammel. Tjek netforbindelsen.",min:"min.",hr:"t.",photo:"Tag billede",retake:"Tag nyt billede",cancel:"Annuller",comment:"Kort beskrivelse (valgfri)",photonote:"Fotografér kun tekstilet – undgå personer og kundeoplysninger.",stats:"Registrerede årsager",d1:"I dag",d7:"7 dage",dall:"Alle",none:"Ingen registreringer endnu",tot:"registreringer",devnote:"Kun denne enhed"},
+en:{today:"Today",pcs:"pcs",warn:"{n} not sent – the oldest is {a} old. Check the connection.",min:"min.",hr:"h",photo:"Take photo",retake:"Retake photo",cancel:"Cancel",comment:"Short description (optional)",photonote:"Photograph the textile only – avoid people and customer details.",stats:"Registered reasons",d1:"Today",d7:"7 days",dall:"All",none:"No registrations yet",tot:"registrations",devnote:"This device only"},
+pl:{today:"Dziś",pcs:"szt.",warn:"Niewysłane: {n} – najstarsze ma {a}. Sprawdź połączenie.",min:"min",hr:"godz.",photo:"Zrób zdjęcie",retake:"Zrób nowe zdjęcie",cancel:"Anuluj",comment:"Krótki opis (opcjonalnie)",photonote:"Fotografuj tylko tekstylia – unikaj osób i danych klientów.",stats:"Zarejestrowane przyczyny",d1:"Dziś",d7:"7 dni",dall:"Wszystkie",none:"Brak rejestracji",tot:"rejestracji",devnote:"Tylko to urządzenie"},
+ro:{today:"Azi",pcs:"buc.",warn:"{n} netrimise – cea mai veche are {a}. Verificați conexiunea.",min:"min",hr:"h",photo:"Fă o poză",retake:"Fă altă poză",cancel:"Anulează",comment:"Scurtă descriere (opțional)",photonote:"Fotografiați doar textilul – evitați persoanele și datele clienților.",stats:"Motive înregistrate",d1:"Azi",d7:"7 zile",dall:"Toate",none:"Nicio înregistrare încă",tot:"înregistrări",devnote:"Doar acest dispozitiv"},
+uk:{today:"Сьогодні",pcs:"шт.",warn:"Не надіслано: {n} – найстаріше {a}. Перевірте зв’язок.",min:"хв",hr:"год",photo:"Зробити фото",retake:"Зробити нове фото",cancel:"Скасувати",comment:"Короткий опис (необов’язково)",photonote:"Фотографуйте лише текстиль – уникайте людей та даних клієнтів.",stats:"Зареєстровані причини",d1:"Сьогодні",d7:"7 днів",dall:"Усі",none:"Ще немає записів",tot:"записів",devnote:"Лише цей пристрій"},
+fr:{today:"Aujourd’hui",pcs:"pcs",warn:"{n} non envoyé(s) – le plus ancien date de {a}. Vérifiez la connexion.",min:"min",hr:"h",photo:"Prendre une photo",retake:"Reprendre la photo",cancel:"Annuler",comment:"Courte description (facultatif)",photonote:"Photographiez uniquement le textile – évitez les personnes et les informations client.",stats:"Motifs enregistrés",d1:"Aujourd’hui",d7:"7 jours",dall:"Tous",none:"Aucun enregistrement pour le moment",tot:"enregistrements",devnote:"Cet appareil uniquement"}
 };
 const t2=k=>((I2[lang]||I2.da)[k]||I2.da[k]||k);
 let todayByReason={};
@@ -486,7 +499,7 @@ function pickPhoto(){ // iPad/tablet/telefon: åbner kameraet direkte. Computer:
 }
 function screenAndet(){
   const m=$('#main');let photo='';
-  m.innerHTML=`<div class="backbar"><button class="backbtn" id="b3">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${tArt(art)}</b>${size&&size.length?' · '+entryLabel(size):''} · ${t('r_andet')}</div><div class="andet"><button class="phbtn" id="pb"><span class="pi">📷</span><span>${t2('photo')}</span></button><textarea id="cm" maxlength="200" rows="2" placeholder="${t2('comment')}"></textarea><button class="btn" id="sv2" style="min-height:64px;font-size:20px">${t('save')}</button></div>`;
+  m.innerHTML=`<div class="backbar"><button class="backbtn" id="b3">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${tArt(art)}</b>${size&&size.length?' · '+entryLabel(size):''} · ${t('r_andet')}</div><div class="andet"><button class="phbtn" id="pb"><span class="pi">📷</span><span>${t2('photo')}</span></button><div class="photonote">ⓘ ${t2('photonote')}</div><textarea id="cm" maxlength="200" rows="2" placeholder="${t2('comment')}"></textarea><button class="btn" id="sv2" style="min-height:64px;font-size:20px">${t('save')}</button></div>`;
   $('#b3').onclick=screenReason;
   const take=async()=>{const ph=await pickPhoto();if(ph){photo=ph;$('#pb').innerHTML=`<img src="${photo}" alt=""><span style="padding:6px">${t2('retake')}</span>`}};
   $('#pb').onclick=take;
@@ -512,14 +525,15 @@ drawDbar();
 async function confirmSave(reasonKey,extra){
 const rec={ts:Date.now(),cid:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2,10),lang,department:deptName(dept),dk:dept,test:isTestDept(dept),category:cat,article:art,variant:(size&&size[0])||'',size:(size&&size[1])||'',dimension:(size&&size[2])||'',color:(size&&size[3])||'',customer:(size&&size[4])||'',reason:reasonKey,...(extra||{})};
 const rid=await window.KassationQueue.addRecord(rec);
+feedback('ok');
 refreshToday();
 window.KassationSync.flushQueue();setTimeout(()=>window.KassationSync.flushQueue(),4300);
 const msg=`✓ ${t(cat)} · ${tArt(art)}${size&&size.length?' · '+entryLabel(size):''} · ${rl(reasonKey)}`;
 if(curArt&&curArt.andet||lockedSize)screenReason();else if(curArt)screenVar(curArt.nm,curArt.sizes,curArt.grp);else screenArt(); // artiklen er låst: tilbage til samme variantliste (eller årsag for Andet) - ingen ventetid
 showToast(msg,async()=>{ // Fortryd: bjælken skifter med det samme; registreringen fjernes, hvis den ikke er sendt
-showToast('↩ '+t('undone'));
+feedback('undo');showToast('↩ '+t('undone'));
 let ok=false;try{ok=await window.KassationQueue.deleteIfPending(rid)}catch(e){console.error(e)}
-if(ok){refreshToday()}else showToast('⚠ '+t('toolate'),null,true);
+if(ok){refreshToday()}else{feedback('err');showToast('⚠ '+t('toolate'),null,true)}
 });
 }
 function showToast(msg,undo,warn){ // grøn bjælke nederst (dækker kun footeren); med Fortryd i 3,5 sek.
