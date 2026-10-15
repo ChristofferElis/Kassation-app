@@ -4,7 +4,7 @@
       Ellers lad den stå som tom tekst: "" */
 
 window.KASSATION_CONFIG = {
-  FLOW_URL: "",
+  FLOW_URL: "https://default7b3c007331d44dfd8d4d122bd10aab.6b.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/16/workflows/a7ee6ab4765a4a49b9ffa031083484af/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=txwXQqMnd50DKE9dBnCDdtCpRgplzGp6zcdDG35pbv8",
   API_KEY: "JMbMRsaJTpRFlMaq9suwbcWmVgPJBchd",
   // Adgangskode: lav en hash på siden .../index.html#makepin og indsæt den her.
   // Tom tekst = ingen adgangskode.
