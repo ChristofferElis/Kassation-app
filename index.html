@@ -81,7 +81,10 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left
 .btn{background:var(--acc);color:var(--acc-ink);border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
 .pending{background:var(--pend-bg);color:var(--y);border-radius:10px;padding:8px 10px;font-size:12px;margin-bottom:8px}
 .warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:8px 10px;font-size:12px;margin:0 16px 8px}
-.refbtn{position:absolute;top:6px;left:6px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--deep);color:var(--mut);font-size:16px;display:flex;align-items:center;justify-content:center;padding:0}
+.rfill .reason.hasref{padding-left:88px}
+.refbtn{position:absolute;top:50%;left:8px;transform:translateY(-50%);height:calc(100% - 14px);max-height:72px;aspect-ratio:1/1;border-radius:14px;border:2px solid var(--acc);background:var(--deep);color:var(--mut);font-size:30px;display:flex;align-items:center;justify-content:center;padding:0;overflow:hidden}
+.refbtn img{width:100%;height:100%;object-fit:cover;display:block}
+.refbtn .mag{position:absolute;right:3px;bottom:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center}
 .refbtn:active{background:var(--acc);color:var(--acc-ink)}
 .refov{position:fixed;inset:0;z-index:9000;background:var(--overlay2);display:flex;align-items:center;justify-content:center;padding:20px}
 .refcard{background:var(--card);border:1px solid var(--line);border-radius:18px;max-width:520px;width:100%;padding:16px;text-align:center}
@@ -279,7 +282,7 @@ function $(s){return document.querySelector(s)}
   lg.onerror=()=>{i++;if(i<list.length){lg.src=list[i];return}lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
   lg.src=list[0];
 })();
-const APP_VERSION='2026.10.16-a'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
+const APP_VERSION='2026.10.16-b'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
 /* Lyd og vibration ved gennemført registrering (slå fra i config.js: LYD:false / VIBRATION:false) */
 let _ac=null;
 function unlockAudio(){try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume()}catch(e){}}
@@ -460,13 +463,23 @@ const REF_FILES=['hul_frotte','jordslaaet_frotte','traevlet_frotte','blaek_frott
 function warmRef(){if(navigator.onLine===false)return;REF_FILES.forEach(u=>{fetch(u).catch(()=>{})})}
 if(document.readyState==='complete')setTimeout(warmRef,5000);else window.addEventListener('load',()=>setTimeout(warmRef,5000));
 const REF_LBL={da:["Eksempel","Eksempelbillede kommer snart","Tryk for at lukke"],en:["Example","Example photo coming soon","Tap to close"],pl:["Przykład","Zdjęcie wkrótce","Dotknij, aby zamknąć"],ro:["Exemplu","Fotografia vine în curând","Atingeți pentru a închide"],uk:["Приклад","Фото незабаром","Торкніться, щоб закрити"],fr:["Exemple","Photo d’exemple bientôt disponible","Touchez pour fermer"]};
+const refCands=k=>{const b=k.replace('r_','');return['ref/'+b+'_'+String(cat||'').replace('cat_','')+'.jpg','ref/'+b+'.jpg']};
+const _refUrl={}; // husker hvilket billede der blev fundet (eller '' = findes ikke), så skærmen ikke blinker ved gentegning
+function refThumb(btn,k){
+  const key=k+'|'+cat,c=refCands(k);
+  if(_refUrl[key]==='')return; // vi ved, der ikke er noget billede: behold kameraet
+  const im=new Image();im.alt='';im.decoding='async';let i=0;
+  im.onload=()=>{_refUrl[key]=im.src;btn.textContent='';btn.appendChild(im);const m=document.createElement('span');m.className='mag';m.textContent='🔍';btn.appendChild(m)};
+  im.onerror=()=>{i++;if(i<c.length){im.src=c[i]}else _refUrl[key]=''};
+  im.src=_refUrl[key]||c[0];
+}
 function showRef(k,ic){
   const L=REF_LBL[lang]||REF_LBL.da,rt=REF_TXT[k+'|'+cat]||REF_TXT[k],tx=(rt&&(rt[lang]||rt.da))||'';
   const o=document.createElement('div');o.className='refov';
   o.innerHTML=`<div class="refcard"><h3>${ic} ${t(k)}</h3><div id="rimg"></div>${tx?`<p>${tx}</p>`:''}<small>${L[2]}</small></div>`;
   const img=new Image();img.alt=t(k);
   img.onload=()=>{o.querySelector('#rimg').appendChild(img)};
-  const base=k.replace('r_',''),cands=['ref/'+base+'_'+String(cat||'').replace('cat_','')+'.jpg','ref/'+base+'.jpg'];let ci=0;
+  const cands=refCands(k);let ci=0;
   img.onerror=()=>{ci++;if(ci<cands.length){img.src=cands[ci];return}o.querySelector('#rimg').innerHTML=`<div class="refph"><div>📷</div><div>${L[1]}</div></div>`};
   img.src=cands[0];
   o.onclick=()=>o.remove();document.body.appendChild(o);
@@ -560,7 +573,7 @@ if(lk){lk.classList.toggle('on',!!lockedSize);lk.onclick=()=>{lockedSize=lockedS
 const qb=$('#qb'),qbDraw=()=>{qb.textContent='＃ '+(qtyNext>1?qtyNext+' '+t2('pcs'):t2('qty'));qb.classList.toggle('on',qtyNext>1)};qbDraw();qb.onclick=()=>openQty(qbDraw);
 $('#mm').onclick=()=>{multiMode=!multiMode;$('#mm').classList.toggle('on',multiMode);$('#sb').style.display=multiMode?'block':'none';if(!multiMode){sel.clear();g.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));upd()}};
 reasonsFor().forEach(([k,ic])=>{const d=document.createElement('div');d.className='reason';d.innerHTML=`<div class="ic">${ic}</div><div>${t(k)}</div>`;
-if(!REF_NOIMG.includes(k)){const rb=document.createElement('button');rb.className='refbtn';rb.textContent='📷';rb.setAttribute('aria-label',(REF_LBL[lang]||REF_LBL.da)[0]);rb.onclick=e=>{e.stopPropagation();showRef(k,ic)};d.appendChild(rb)}
+if(!REF_NOIMG.includes(k)){const rb=document.createElement('button');rb.className='refbtn';rb.textContent='📷';rb.setAttribute('aria-label',(REF_LBL[lang]||REF_LBL.da)[0]);rb.onclick=e=>{e.stopPropagation();showRef(k,ic)};d.appendChild(rb);d.classList.add('hasref');refThumb(rb,k)}
 d.onclick=()=>{if(!multiMode){if(k==='r_andet'){screenAndet();return}confirmSave(k);return}if(sel.has(k)){sel.delete(k);d.classList.remove('sel')}else{sel.add(k);d.classList.add('sel')}upd()};g.appendChild(d)});
 sv.onclick=()=>{if(sel.size)confirmSave(REASONS.map(r=>r[0]).filter(k=>sel.has(k)).join(';'))};
 drawDbar();
