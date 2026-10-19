@@ -282,7 +282,7 @@ function $(s){return document.querySelector(s)}
   lg.onerror=()=>{i++;if(i<list.length){lg.src=list[i];return}lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
   lg.src=list[0];
 })();
-const APP_VERSION='2026.10.19-f'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
+const APP_VERSION='2026.10.19-g'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
 /* Lyd og vibration ved gennemført registrering (slå fra i config.js: LYD:false / VIBRATION:false) */
 let _ac=null;
 function unlockAudio(){try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume()}catch(e){}}
@@ -460,11 +460,12 @@ const REF_NOIMG=['r_andet','r_udgaaet']; // årsager uden eksempel
    Korte tekster under billedet: REF_TXT["r_årsag|cat_kategori"] (kun den kombination) eller REF_TXT["r_årsag"] (alle kategorier). */
 const REF_TXT={
  r_hul:{da:"Hul i stoffet",en:"Hole in the fabric"},
+ r_transport:{da:"Farvede mærker fra transportbånd eller maskine",en:"Coloured marks from conveyor belt or machine",pl:"Kolorowe ślady z taśmociągu lub maszyny",ro:"Urme colorate de la banda transportoare sau mașină",uk:"Кольорові сліди від конвеєра або машини",fr:"Traces colorées du convoyeur ou de la machine"},
  r_misbrug:{da:"Misfarvning eller skader fra forkert brug",en:"Discoloration or damage from misuse",pl:"Przebarwienie lub uszkodzenia z powodu niewłaściwego użycia",ro:"Decolorare sau deteriorări din utilizare greșită",uk:"Знебарвлення або пошкодження через неправильне використання",fr:"Décoloration ou dommages dus à un mauvais usage"},
  "r_maxvask|cat_frotte":{da:"Gråligt og stift i følelsen",en:"Greyish and stiff to the touch",pl:"Szarawe i sztywne w dotyku",ro:"Cenușiu și rigid la atingere",uk:"Сірувате і жорстке на дотик",fr:"Grisâtre et rêche au toucher"}
 };
 // billeder, der hentes i baggrunden første gang tabletten har net, så eksemplerne også virker offline
-const REF_FILES=['hul_frotte','jordslaaet_frotte','traevlet_frotte','blaek_frotte','rust_frotte','misbrug_frotte','strop_frotte','olie_frotte','maxvask_frotte'].map(f=>'ref/'+f+'.jpg');
+const REF_FILES=['hul_frotte','jordslaaet_frotte','traevlet_frotte','blaek_frotte','rust_frotte','misbrug_frotte','strop_frotte','olie_frotte','maxvask_frotte','transport_frotte'].map(f=>'ref/'+f+'.jpg');
 function warmRef(){if(navigator.onLine===false)return;REF_FILES.forEach(u=>{fetch(u).catch(()=>{})})}
 if(document.readyState==='complete')setTimeout(warmRef,5000);else window.addEventListener('load',()=>setTimeout(warmRef,5000));
 const REF_LBL={da:["Eksempel","Eksempelbillede kommer snart","Tryk for at lukke"],en:["Example","Example photo coming soon","Tap to close"],pl:["Przykład","Zdjęcie wkrótce","Dotknij, aby zamknąć"],ro:["Exemplu","Fotografia vine în curând","Atingeți pentru a închide"],uk:["Приклад","Фото незабаром","Торкніться, щоб закрити"],fr:["Exemple","Photo d’exemple bientôt disponible","Touchez pour fermer"]};
