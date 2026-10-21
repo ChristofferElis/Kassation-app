@@ -129,7 +129,13 @@ html[data-theme="inv"] .tile:active,html[data-theme="inv"] .reason:active{backgr
 .tile,.vgrid button,.artrow{position:relative}.wig{animation:wig .26s ease-in-out infinite alternate}@keyframes wig{from{transform:rotate(-1.1deg)}to{transform:rotate(1.1deg)}}@media(prefers-reduced-motion:reduce){.wig{animation:none}}
 .xbtn{position:absolute;top:-8px;left:-8px;width:30px;height:30px;border-radius:50%;background:var(--r);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;box-shadow:0 1px 4px rgba(0,0,0,.45);z-index:2;cursor:pointer}
 .addtile{border-style:dashed;color:var(--acc)}.vgrid button.addtile{background:none;border:1px dashed var(--acc);color:var(--acc);border-radius:12px}
-.editbar{display:none;align-items:center;gap:8px;padding:8px 16px;background:var(--deep);border-bottom:2px solid var(--acc)}.ebt{font-weight:800}
+.editbar{display:none;align-items:center;gap:8px;padding:9px 16px;background:repeating-linear-gradient(135deg,#f5a524 0 16px,#e8961a 16px 32px);color:#1a1200;border-bottom:3px solid #1a1200}
+.ebt{font-weight:900;font-size:17px;letter-spacing:.06em;text-transform:uppercase}
+body.editing::after{content:"";position:fixed;inset:0;border:6px solid #f5a524;pointer-events:none;z-index:60}
+body.editing main{background:rgba(245,165,36,.10)}
+body.editing .tile:not(.addtile){border-color:rgba(245,165,36,.55)}
+body.editing .editbar .backbtn{background:rgba(255,255,255,.55);color:#1a1200;border:1px solid #1a1200}
+body.editing .editbar .mmbtn.on{background:#1a1200;color:#fff;border-color:#1a1200}
 .cus label{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px}.cus .search{margin-bottom:4px}.cus .err{color:var(--r);min-height:18px;font-size:14px;margin:4px 0}.cus h4{margin:14px 0 6px}.backbtn.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}.cown{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}.cus details{margin-top:14px}.cus summary{cursor:pointer;font-weight:600;padding:6px 0}.cus textarea{font-family:inherit;resize:vertical}
 .lockov{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
 .lockbox{width:100%;max-width:340px;text-align:center}
@@ -288,7 +294,7 @@ function $(s){return document.querySelector(s)}
   lg.onerror=()=>{i++;if(i<list.length){lg.src=list[i];return}lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
   lg.src=list[0];
 })();
-const APP_VERSION='2026.10.21-f'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
+const APP_VERSION='2026.10.21-g'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
 /* Lyd og vibration ved gennemført registrering (slå fra i config.js: LYD:false / VIBRATION:false) */
 let _ac=null;
 function unlockAudio(){try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume()}catch(e){}}
@@ -423,7 +429,7 @@ function catArticles(){
  return base.map(([n,s])=>{const ex=av.filter(x=>x.a===n).map(x=>x.e);return ex.length?[n,s.filter(e=>(e||[]).some(Boolean)).concat(ex)]:[n,s]})
   .concat(aa.map(x=>[x.n,x.v.length?x.v:[[]]]))}
 /* redigeringslinje + kode */
-function drawEditbar(){const b=$('#editbar');if(!b)return;b.style.display=editMode?'flex':'none';
+function drawEditbar(){const b=$('#editbar');if(!b)return;b.style.display=editMode?'flex':'none';document.body.classList.toggle('editing',editMode);
  if(!editMode){b.innerHTML='';return}
  b.innerHTML=`<span class="ebt">✎ ${t2('editing')}</span><span style="flex:1"></span><button class="backbtn" id="ebk">💾 ${t2('cbak')}</button><button class="backbtn" id="ecan">${t2('ecan')}</button><button class="mmbtn on" id="esave" style="min-height:40px;padding:6px 16px;font-size:15px">${t2('csave')}</button>`;
  $('#ebk').onclick=cusBackup;$('#ecan').onclick=()=>exitEdit(false);$('#esave').onclick=()=>exitEdit(true)}
