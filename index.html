@@ -126,6 +126,11 @@ html[data-theme="inv"] .langs button.on{background:#16cbe2;color:#00005a;border-
 html[data-theme="inv"] .backbtn{color:#fff;border-color:#a9bde8}
 html[data-theme="inv"] .refbtn{background:#eef2f7;color:#00005a}
 html[data-theme="inv"] .tile:active,html[data-theme="inv"] .reason:active{background:#16cbe2;color:#00005a}
+.tile,.vgrid button,.artrow{position:relative}.wig{animation:wig .26s ease-in-out infinite alternate}@keyframes wig{from{transform:rotate(-1.1deg)}to{transform:rotate(1.1deg)}}@media(prefers-reduced-motion:reduce){.wig{animation:none}}
+.xbtn{position:absolute;top:-8px;left:-8px;width:30px;height:30px;border-radius:50%;background:var(--r);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;box-shadow:0 1px 4px rgba(0,0,0,.45);z-index:2;cursor:pointer}
+.addtile{border-style:dashed;color:var(--acc)}.vgrid button.addtile{background:none;border:1px dashed var(--acc);color:var(--acc);border-radius:12px}
+.editbar{display:none;align-items:center;gap:8px;padding:8px 16px;background:var(--deep);border-bottom:2px solid var(--acc)}.ebt{font-weight:800}
+.cus label{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px}.cus .search{margin-bottom:4px}.cus .err{color:var(--r);min-height:18px;font-size:14px;margin:4px 0}.cus h4{margin:14px 0 6px}.backbtn.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}.cown{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}.cus details{margin-top:14px}.cus summary{cursor:pointer;font-weight:600;padding:6px 0}.cus textarea{font-family:inherit;resize:vertical}
 .lockov{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
 .lockbox{width:100%;max-width:340px;text-align:center}
 .lockbox h2{margin:0 0 6px;font-size:20px}.lockbox p{margin:0 0 16px;color:var(--mut);font-size:14px}
@@ -146,6 +151,7 @@ html[data-theme="inv"] .tile:active,html[data-theme="inv"] .reason:active{backgr
 <div id="cfgwarn"></div>
 <div id="syncwarn"></div>
 <div class="crumb" id="crumb"></div>
+<div class="editbar" id="editbar"></div>
 <main id="main"></main>
 <div class="dbar" id="dbar" style="display:none"></div>
 <footer>
@@ -282,7 +288,7 @@ function $(s){return document.querySelector(s)}
   lg.onerror=()=>{i++;if(i<list.length){lg.src=list[i];return}lg.classList.remove('on');if(window.DEMO_LOGO_PLACEHOLDER)document.getElementById('logoph').classList.add('on')};
   lg.src=list[0];
 })();
-const APP_VERSION='2026.10.20-a'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
+const APP_VERSION='2026.10.21-c'; // hæves ved hver opdatering, så man kan se hvilken version tabletten kører
 /* Lyd og vibration ved gennemført registrering (slå fra i config.js: LYD:false / VIBRATION:false) */
 let _ac=null;
 function unlockAudio(){try{_ac=_ac||new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume()}catch(e){}}
@@ -314,7 +320,7 @@ const net=navigator.onLine;$('#netstat').textContent=net?t('online'):t('offline'
 $('#cfgwarn').innerHTML=window.KassationSync&&!window.KassationSync.configured()?`<div class="warn">${t('cfgwarn')}</div>`:'';
 updatePendBadge();checkWarn();
 const lw=$('#langs');lw.innerHTML='';
-LANGS.forEach(l=>{const b=document.createElement('button');b.textContent=l.toUpperCase();b.className=l===lang?'on':'';b.onclick=()=>{lang=l;render()};lw.appendChild(b)});
+LANGS.forEach(l=>{const b=document.createElement('button');b.textContent=l.toUpperCase();b.className=l===lang?'on':'';b.onclick=()=>{lang=l;if(editMode){renderHeader();drawEditbar();if(curRedraw)curRedraw()}else render()};lw.appendChild(b)});
 renderCrumb();
 }
 const isTestDept=k=>{const L=(window.KASSATION_CONFIG||{}).LIVE_DEPTS;return !!(k&&L&&L.length&&!L.includes(k))};
@@ -336,7 +342,7 @@ const ca=$('#chart');if(ca)ca.onclick=screenArt;
 const cg=$('#chgrp');if(cg)cg.onclick=()=>screenVar(curArt.nm,curArt.sizes);
 const cv=$('#chvar');if(cv)cv.onclick=()=>screenVar(curArt.nm,curArt.sizes,curArt.grp);
 }
-function screenDept(){
+function screenDept(){if(editMode){showToast(t2('esavefirst'),null,true);return}
 dept=null;cat=null;art=null;size=null;curArt=null;lockedSize=null;renderCrumb();
 const m=$('#main');
 m.innerHTML=`<div class="crumb" style="padding:0 0 6px;justify-content:space-between;flex-wrap:nowrap"><span>${t('sub_dept')}</span>${supportOn()?`<button class="mmbtn supbtn" id="bsup">❓ ${t2('support')}</button>`:''}</div>
@@ -375,53 +381,150 @@ return n<=3?'big':n<=6?'mid':n>12?'sm':'';
 function screenCats(){
 cat=null;art=null;size=null;curArt=null;lockedSize=null;renderCrumb();
 const m=$('#main');
-m.innerHTML=`<div class="backbar"><button class="backbtn" id="b0">${t('back')}</button><button class="iconbtn" id="binfo" style="margin-left:auto" aria-label="${t2('stats')}">ⓘ</button></div><div class="crumb" style="padding:0 0 8px">${t('sub')}</div><div class="grid g2" id="g"></div>`;
-$('#b0').onclick=screenDept;$('#binfo').onclick=()=>openStats('d1');
+curRedraw=screenCats;
+m.innerHTML=`<div class="backbar"><button class="backbtn" id="b0">${t('back')}</button>${redBtn()}<button class="iconbtn" id="binfo" style="margin-left:${editMode?'auto':'8px'}" aria-label="${t2('stats')}">ⓘ</button></div><div class="crumb" style="padding:0 0 8px">${t('sub')}</div><div class="grid g2" id="g"></div>`;
+$('#b0').onclick=()=>{if(editMode)return showToast(t2('esavefirst'),null,true);screenDept()};$('#binfo').onclick=()=>openStats('d1');bindRed();
 const g=$('#g');
-const cats=(DEPT_CATS[dept]||[]).concat([["cat_andet","➕"]]);
+const cats=(DEPT_CATS[dept]||[]).concat(cusCats().map(x=>[x.n,x.ic||'🏷️']),[["cat_andet","➕"]]);
 // fliserne fylder mere, jo færre kategorier der er (fx 2 + Andet = tre store fliser)
-const sz=fillGrid(g,cats.length);
-cats.forEach(([k,ic])=>{const d=document.createElement('div');d.className='tile '+sz;d.innerHTML=`<div><span class="ti">${icoHtml(ic)}</span><br>${t(k)}</div>`;d.onclick=()=>{cat=k;screenArt()};g.appendChild(d)});
+const sz=fillGrid(g,cats.length+(editMode?1:0));
+cats.forEach(([k,ic])=>{const d=document.createElement('div');d.className='tile '+sz;d.innerHTML=`<div><span class="ti">${icoHtml(ic)}</span><br>${escH(t(k))}</div>`;d.onclick=()=>{cat=k;screenArt()};g.appendChild(d);
+ if(editMode&&ownCat(k))xBadge(d,()=>{rmCat(k);screenCats()})});
+if(editMode)plusTile(g,sz,t2('eaddcat'),()=>cusDlg('cat'));
 }
 function singleArt(){const b=catArticles();return b.length===1&&b[0][1].length===1} // fx Viskestykker: ét valg → direkte til årsag
-function catArticles(){return ((CATALOG_BY_DEPT[dept]&&CATALOG_BY_DEPT[dept][cat]&&CATALOG_BY_DEPT[dept][cat].articles)||[])}
+/* ---- Egne kategorier, artikler og varianter (kun denne enhed) + redigeringstilstand ----
+   Indbyggede emner kan ikke ændres. Redigering kræver kode (EDIT_PIN i config.js, ellers 1234), og ændringerne gælder først ved "Gem". */
+let CUS={arts:[],vars:[],cats:[]}; // cats:[{d,n,ic}] · arts:[{d,c,n,v:[entries]}] · vars:[{d,c,a,e}] (e = [variant,størrelse,"","",""])
+const cusNorm=x=>{x=x&&typeof x==='object'?x:{};return{arts:Array.isArray(x.arts)?x.arts:[],vars:Array.isArray(x.vars)?x.vars:[],cats:Array.isArray(x.cats)?x.cats:[]}};
+try{CUS=cusNorm(JSON.parse(lsGet('kass_custom')||'null'))}catch(e){}
+const cusSave=()=>lsSet('kass_custom',JSON.stringify(CUS));
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){} // bed browseren om ikke at rydde lageret
+const ek=e=>[0,1,2,3,4].map(i=>(e&&e[i])||'').join('|');
+const cleanTxt=x=>String(x==null?'':x).replace(/[<>&"'`\\]/g,'').replace(/\s+/g,' ').trim().slice(0,40);
+const escH=x=>String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+let editMode=false,CUS_SNAP=null,curRedraw=null;
+const cusCats=()=>CUS.cats.filter(x=>x.d===dept);
+const ownCat=k=>CUS.cats.find(x=>x.d===dept&&x.n===k);
+const cusArt=n=>CUS.arts.find(x=>x.d===dept&&x.c===cat&&x.n===n);
+function cusVarList(nm){const ca=cusArt(nm);
+ if(ca)return ca.v.map((e,i)=>({e,rm:()=>{ca.v.splice(i,1)}}));
+ return CUS.vars.map((x,i)=>({x,e:x.e,rm:()=>{CUS.vars.splice(i,1)}})).filter(o=>o.x.d===dept&&o.x.c===cat&&o.x.a===nm)}
+const rmCat=k=>{const f=x=>!(x.d===dept&&(x.n===k||x.c===k));CUS.cats=CUS.cats.filter(x=>!(x.d===dept&&x.n===k));CUS.arts=CUS.arts.filter(x=>!(x.d===dept&&x.c===k));CUS.vars=CUS.vars.filter(x=>!(x.d===dept&&x.c===k))};
+const rmArt=n=>{const ca=cusArt(n);if(ca)CUS.arts.splice(CUS.arts.indexOf(ca),1)};
+function catArticles(){
+ const base=(CATALOG_BY_DEPT[dept]&&CATALOG_BY_DEPT[dept][cat]&&CATALOG_BY_DEPT[dept][cat].articles)||[];
+ const av=CUS.vars.filter(x=>x.d===dept&&x.c===cat),aa=CUS.arts.filter(x=>x.d===dept&&x.c===cat);
+ if(!av.length&&!aa.length)return base;
+ return base.map(([n,s])=>{const ex=av.filter(x=>x.a===n).map(x=>x.e);return ex.length?[n,s.filter(e=>(e||[]).some(Boolean)).concat(ex)]:[n,s]})
+  .concat(aa.map(x=>[x.n,x.v.length?x.v:[[]]]))}
+/* redigeringslinje + kode */
+function drawEditbar(){const b=$('#editbar');if(!b)return;b.style.display=editMode?'flex':'none';
+ if(!editMode){b.innerHTML='';return}
+ b.innerHTML=`<span class="ebt">✎ ${t2('editing')}</span><span style="flex:1"></span><button class="backbtn" id="ebk">💾 ${t2('cbak')}</button><button class="backbtn" id="ecan">${t2('ecan')}</button><button class="mmbtn on" id="esave" style="min-height:40px;padding:6px 16px;font-size:15px">${t2('csave')}</button>`;
+ $('#ebk').onclick=cusBackup;$('#ecan').onclick=()=>exitEdit(false);$('#esave').onclick=()=>exitEdit(true)}
+function enterEdit(){CUS_SNAP=JSON.stringify(CUS);editMode=true;drawEditbar();if(curRedraw)curRedraw()}
+function exitEdit(save){if(save)cusSave();else{try{CUS=cusNorm(JSON.parse(CUS_SNAP))}catch(e){}}editMode=false;CUS_SNAP=null;drawEditbar();screenCats()}
+function askEditPin(){
+ const o=showOv(`<h2>${t2('edit')}</h2><p>${t2('epin')}</p><input id="ep" type="password" inputmode="numeric" autocomplete="off"><div class="err" id="ee"></div><button id="eg">OK</button><button id="ex" style="background:var(--card);color:var(--ink);border:1px solid var(--line)">${t('close')}</button>`);
+ const inp=o.querySelector('#ep'),err=o.querySelector('#ee');
+ const go=()=>{const want=String((window.KASSATION_CONFIG||{}).EDIT_PIN||'1234');if(inp.value.trim()===want){o.remove();enterEdit()}else{inp.value='';err.textContent=t2('ewrong')}};
+ o.querySelector('#eg').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()};o.querySelector('#ex').onclick=()=>o.remove();setTimeout(()=>inp.focus(),50)}
+const redBtn=()=>editMode?'':`<button class="mmbtn" id="redb" style="margin-left:auto;min-height:40px;padding:6px 14px;font-size:14px">${t2('edit')}</button>`;
+const bindRed=()=>{const r=$('#redb');if(r)r.onclick=askEditPin};
+function xBadge(el,fn){const x=document.createElement('span');x.className='xbtn';x.textContent='✕';x.onclick=e=>{e.stopPropagation();fn()};el.appendChild(x);el.classList.add('wig')}
+function plusTile(g,sz,label,fn){const d=document.createElement('div');d.className='tile addtile '+sz;d.textContent=label;d.onclick=fn;g.appendChild(d)}
+/* tilføj-vindue: mode 'cat' | 'art' | 'var' (nm = artiklen) – ændrer kun kladden; gemmes først med Gem */
+function cusDlg(mode,nm){
+ const p=$('#panel');p.style.display='flex';
+ const arts=catArticles(),cur=mode==='var'?arts.find(a=>a[0]===nm):null;
+ const sizesAll=mode==='var'?(cur?cur[1]:[]):arts.flatMap(a=>a[1]);
+ const uq=a=>[...new Set(a.filter(Boolean))],low=x=>String(x||'').toLowerCase();
+ const dl=(id,a)=>`<datalist id="${id}">${a.map(x=>`<option value="${escH(x)}">`).join('')}</datalist>`;
+ const close=()=>{p.style.display='none';p.innerHTML=''};
+ const finish=()=>{close();if(mode==='cat')screenCats();else if(mode==='art')screenArt();else{const c=catArticles().find(a=>a[0]===nm);if(c)screenVar(nm,c[1]);else screenArt()}};
+ const title={cat:t2('eaddcat'),art:t2('addart'),var:t2('addvar')}[mode];
+ const draw=msg=>{
+  p.innerHTML=`<div class="pcard cus"><div class="row2"><h3>${title}</h3><button class="backbtn" id="cx">${t('close')}</button></div>`+
+   `<label>${t2('cname')}</label><input id="cn" class="search" ${mode==='var'?'list="dl1"':''} maxlength="40" autocomplete="off">`+
+   (mode==='cat'?`<label>${t2('cemoji')}</label><input id="ci" class="search" maxlength="8" autocomplete="off">`
+    :mode==='var'?`<label>${t2('csize')}</label><input id="cs" class="search" list="dl2" maxlength="40" autocomplete="off">${dl('dl1',uq(sizesAll.map(e=>e[0])))}${dl('dl2',uq(sizesAll.map(e=>e[1])))}`
+    :`<label>${t2('cvars')}</label><textarea id="cv" class="search" rows="4"></textarea>`)+
+   `<div class="err" id="ce">${msg||''}</div><button class="mmbtn on" id="csv" style="width:100%">${t2('csave')}</button></div>`;
+  $('#cx').onclick=close;
+  $('#csv').onclick=()=>{
+   const n=cleanTxt($('#cn').value);
+   if(!n)return draw(t2('creq'));
+   if(mode==='var'){const s2=cleanTxt($('#cs').value);
+    if(sizesAll.some(e=>low(e[0])===low(n)&&low(e[1])===low(s2)))return draw(t2('cdup'));
+    const e=[n,s2,'','',''],ca=cusArt(nm);if(ca)ca.v.push(e);else CUS.vars.push({d:dept,c:cat,a:nm,e});
+   }else if(mode==='art'){
+    if(low(n)==='andet'||arts.some(a=>low(a[0])===low(n)))return draw(t2('cdup'));
+    const v=[],seen={};($('#cv').value||'').split('\n').forEach(l=>{const i=l.indexOf(','),a=cleanTxt(i<0?l:l.slice(0,i)),b=i<0?'':cleanTxt(l.slice(i+1));
+      if(a&&!seen[low(a)+'|'+low(b)]){seen[low(a)+'|'+low(b)]=1;v.push([a,b,'','',''])}});
+    CUS.arts.push({d:dept,c:cat,n,v});
+   }else{
+    const taken=(DEPT_CATS[dept]||[]).map(([k])=>low(t(k))).concat(cusCats().map(x=>low(x.n)),['andet']);
+    if(taken.includes(low(n))||/^(cat_|r_|a_|v_|g_)/i.test(n))return draw(t2('cdup'));
+    CUS.cats.push({d:dept,n,ic:Array.from(cleanTxt($('#ci').value)).slice(0,3).join('')||'🏷️'});
+   }
+   finish()};
+ };
+ draw();setTimeout(()=>{const i=$('#cn');if(i)i.focus()},50);
+}
+function cusBackup(){
+ const p=$('#panel');p.style.display='flex';
+ p.innerHTML=`<div class="pcard cus"><div class="row2"><h3>💾 ${t2('cbak')}</h3><button class="backbtn" id="cx">${t('close')}</button></div><p class="qhint">${t2('cbakhint')}</p><textarea id="cb" class="search" rows="6">${escH(JSON.stringify(CUS))}</textarea><div class="err" id="ce"></div><button class="mmbtn" id="cl" style="width:100%">${t2('cload')}</button></div>`;
+ const close=()=>{p.style.display='none';p.innerHTML=''};$('#cx').onclick=close;
+ $('#cl').onclick=()=>{try{const x=JSON.parse($('#cb').value),E=e=>[0,1,2,3,4].map(i=>cleanTxt((e||[])[i]));
+  if(!x||!Array.isArray(x.arts)||!Array.isArray(x.vars))throw 0;
+  CUS={arts:x.arts.filter(a=>a&&a.n).map(a=>({d:cleanTxt(a.d),c:cleanTxt(a.c),n:cleanTxt(a.n),v:(Array.isArray(a.v)?a.v:[]).map(E)})),
+       vars:x.vars.filter(a=>a&&a.a).map(a=>({d:cleanTxt(a.d),c:cleanTxt(a.c),a:String(a.a).slice(0,80),e:E(a.e)})),
+       cats:(Array.isArray(x.cats)?x.cats:[]).filter(a=>a&&a.n).map(a=>({d:cleanTxt(a.d),n:cleanTxt(a.n),ic:Array.from(cleanTxt(a.ic)).slice(0,3).join('')||'🏷️'}))};
+  close();screenCats()}catch(e){$('#ce').textContent=t2('cbad')}};
+}
 function screenArt(back){
-qtyNext=1;art=null;size=null;curArt=null;lockedSize=null;renderCrumb();
-if(singleArt()){if(back)return screenCats();const [nm1,sz1]=catArticles()[0];curArt={nm:nm1,sizes:sz1};art=nm1;size=sz1[0];return screenReason()}
+qtyNext=1;art=null;size=null;curArt=null;lockedSize=null;renderCrumb();curRedraw=()=>screenArt();
+if(singleArt()&&!editMode){if(back)return screenCats();const [nm1,sz1]=catArticles()[0];curArt={nm:nm1,sizes:sz1};art=nm1;size=sz1[0];return screenReason()}
 const m=$('#main');
 const base=catArticles();
 if(base.length>=2){
 // flere artikler i kategorien: vælg først artikel (store knapper), derefter variant
-m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px">${t('choose_art')}</div><div class="grid g2" id="ag"></div>`;
-$('#b1').onclick=screenCats;
+m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button>${redBtn()}</div><div class="crumb" style="padding:0 0 8px">${t('choose_art')}</div><div class="grid g2" id="ag"></div>`;
+$('#b1').onclick=screenCats;bindRed();
 const g=$('#ag');
-const allA=base.concat([["Andet",[[]]]]);const asz=fillGrid(g,allA.length);
-allA.forEach(([nm,sizes])=>{const d=document.createElement('div');d.className='tile '+asz;d.textContent=tArt(nm);d.onclick=()=>{if(nm==='Andet'){art=nm;size=[];curArt={nm,andet:true};renderCrumb();screenReason()}else screenVar(nm,sizes)};g.appendChild(d)});
+const allA=base.concat([["Andet",[[]]]]);const asz=fillGrid(g,allA.length+(editMode?1:0));
+allA.forEach(([nm,sizes])=>{const d=document.createElement('div');d.className='tile '+asz;d.textContent=tArt(nm);d.onclick=()=>{if(nm==='Andet'){if(editMode)return;art=nm;size=[];curArt={nm,andet:true};renderCrumb();screenReason()}else screenVar(nm,sizes)};g.appendChild(d);
+ if(editMode&&nm!=='Andet'&&cusArt(nm))xBadge(d,()=>{rmArt(nm);screenArt()})});
+if(editMode)plusTile(g,asz,t2('addart'),()=>cusDlg('art'));
 return;
 }
-m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button></div><input class="search" id="sr" placeholder="${t('search')}"><div id="list"></div>`;
-$('#b1').onclick=screenCats;
+m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button>${redBtn()}</div><input class="search" id="sr" placeholder="${t('search')}"><div id="list"></div>`;
+$('#b1').onclick=screenCats;bindRed();
 const all=base.concat([["Andet",[[]]]]);
 const draw=q=>{
 const list=$('#list');list.innerHTML='';
 all.filter(([nm],i)=>i===all.length-1||!q||nm.toLowerCase().includes(q.toLowerCase())||tArt(nm).toLowerCase().includes(q.toLowerCase())).forEach(([nm,sizes])=>{
 const row=document.createElement('div');row.className='artrow';
 row.innerHTML=`<div class="nm">${tArt(nm)}</div><div class="sizes">${sizes.map((e,i)=>`<button data-i="${i}">${entryLabel(e)}</button>`).join('')}</div>`;
-row.querySelectorAll('button').forEach(b=>b.onclick=()=>{art=nm;size=sizes[+b.dataset.i];curArt=nm==='Andet'?{nm,andet:true}:{nm,sizes};renderCrumb();screenReason()});
+row.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(editMode)return;art=nm;size=sizes[+b.dataset.i];curArt=nm==='Andet'?{nm,andet:true}:{nm,sizes};renderCrumb();screenReason()});
+if(editMode&&nm!=='Andet'&&cusArt(nm))xBadge(row,()=>{rmArt(nm);screenArt()});
 list.appendChild(row);
 });
 };
 draw('');$('#sr').oninput=e=>draw(e.target.value);
+if(editMode){const pb=document.createElement('button');pb.className='mmbtn addtile';pb.style.width='100%';pb.textContent=t2('addart');pb.onclick=()=>cusDlg('art');m.appendChild(pb)}
 }
 function screenGrp(nm,sizes,G){ // ekstra trin: vælg type/serie, før varianterne vises
-curArt={nm,sizes};art=null;size=null;lockedSize=null;renderCrumb();
+curArt={nm,sizes};art=null;size=null;lockedSize=null;renderCrumb();curRedraw=()=>screenGrp(nm,sizes,G);
 const m=$('#main');
-m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${tArt(nm)}</b> · ${t('choose_grp')}</div><div class="grid g2" id="gg"></div>`;
-$('#b1').onclick=screenArt;
+m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button>${redBtn()}</div><div class="crumb" style="padding:0 0 8px"><b>${tArt(nm)}</b> · ${t('choose_grp')}</div><div class="grid g2" id="gg"></div>`;
+$('#b1').onclick=screenArt;bindRed();
 const g=$('#gg');
 const list=G.map(([gn],gi)=>[gn,sizes.filter(e=>grpIdx(G,e)===gi).length]).filter(x=>x[1]>0);
-const gsz=fillGrid(g,list.length);
+const gsz=fillGrid(g,list.length+(editMode?1:0));
 list.forEach(([gn,cnt])=>{const d=document.createElement('div');d.className='tile '+gsz;d.innerHTML=`<div>${tArt(gn)}<span class="gc">${cnt}</span></div>`;d.onclick=()=>screenVar(nm,sizes,gn);g.appendChild(d)});
+if(editMode)plusTile(g,gsz,t2('addvar'),()=>cusDlg('var',nm));
 }
 function screenVar(nm,sizes,grp,back){
 qtyNext=1;
@@ -429,15 +532,18 @@ const G=varGroups(nm);
 if(G&&grp===undefined)return screenGrp(nm,sizes,G);
 {const only=G?sizes.filter(e=>G[grpIdx(G,e)][0]===grp):sizes;
 // artikel uden valg (én tom variant): spring variantskærmen over – ét tryk mindre
-if(only.length===1&&!(only[0]||[]).some(Boolean)){if(back)return screenArt(true);curArt={nm,sizes,grp};art=nm;size=only[0];return screenReason()}}
-curArt={nm,sizes,grp};art=null;size=null;lockedSize=null;renderCrumb();
+if(only.length===1&&!(only[0]||[]).some(Boolean)&&!editMode){if(back)return screenArt(true);curArt={nm,sizes,grp};art=nm;size=only[0];return screenReason()}}
+curArt={nm,sizes,grp};art=null;size=null;lockedSize=null;renderCrumb();curRedraw=()=>screenVar(nm,sizes,grp);
 const items=G?sizes.filter(e=>G[grpIdx(G,e)][0]===grp):sizes;
 const m=$('#main');
-m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${tArt(nm)}</b>${G?' · '+tArt(grp):''} · ${t('choose_var')}</div><div class="${items.length<=24?'grid':'vgrid'}" id="vg"></div>`;
-$('#b1').onclick=G?()=>screenVar(nm,sizes):screenArt;
+m.innerHTML=`<div class="backbar"><button class="backbtn" id="b1">${t('back')}</button>${redBtn()}</div><div class="crumb" style="padding:0 0 8px"><b>${tArt(nm)}</b>${G?' · '+tArt(grp):''} · ${t('choose_var')}</div><div class="${items.length<=24?'grid':'vgrid'}" id="vg"></div>`;
+$('#b1').onclick=G?()=>screenVar(nm,sizes):screenArt;bindRed();
 const g=$('#vg');
-const few=items.length<=24,vsz=few?fillGrid(g,items.length):'';
-items.forEach(e=>{const b=document.createElement(few?'div':'button');if(few)b.className='tile '+vsz;b.textContent=entryLabel(e);b.onclick=()=>{art=nm;size=e;screenReason()};g.appendChild(b)});
+const few=items.length<=24,vsz=few?fillGrid(g,items.length+(editMode?1:0)):'';
+const ownK=new Set(cusVarList(nm).map(o=>ek(o.e)));
+items.forEach(e=>{const b=document.createElement(few?'div':'button');if(few)b.className='tile '+vsz;b.textContent=entryLabel(e);b.onclick=()=>{if(editMode)return;art=nm;size=e;screenReason()};g.appendChild(b);
+ if(editMode&&ownK.has(ek(e)))xBadge(b,()=>{const o=cusVarList(nm).find(o=>ek(o.e)===ek(e));if(o)o.rm();const c=catArticles().find(a=>a[0]===nm);if(c)screenVar(nm,c[1]);else screenArt()})});
+if(editMode){if(few)plusTile(g,vsz,t2('addvar'),()=>cusDlg('var',nm));else{const pb=document.createElement('button');pb.className='addtile';pb.textContent=t2('addvar');pb.onclick=()=>cusDlg('var',nm);g.appendChild(pb)}}
 }
 let multiMode=false,qtyNext=1;
 const QTY_MAX=Math.max(1,parseInt((window.KASSATION_CONFIG||{}).MAX_ANTAL)||10000);
@@ -492,12 +598,12 @@ function showRef(k,ic){
 }
 /* ---- Dagens tal, advarsel ved usendte, Andet med foto ---- */
 const I2={
-da:{photook:"Billede klar",photobig:"Forstør billedet",photonew:"Tag nyt billede",qty:"Antal",qtyq:"Hvor mange stk.?",qtyok:"Brug",qtymax:"Maks. {n}",qtyreset:"Nulstil",today:"I dag",pcs:"stk",warn:"{n} ikke sendt – den ældste er {a} gammel. Tjek netforbindelsen.",min:"min.",hr:"t.",photo:"Tag billede",retake:"Tag nyt billede",cancel:"Annuller",comment:"Kort beskrivelse (valgfri)",photonote:"Fotografér kun tekstilet – undgå personer og kundeoplysninger.",support:"Support",supintro:"Oplever du en fejl, eller har du brug for vejledning eller et ønske til appen? Kontakt:",copy:"Kopiér mail",copied:"Kopieret",mail:"Send mail",unsent:"ikke sendt",diag:"Oplysninger til support",stats:"Registrerede årsager",d1:"I dag",d7:"7 dage",dall:"Alle",none:"Ingen registreringer endnu",tot:"registreringer",devnote:"Kun denne enhed"},
-en:{photook:"Photo ready",photobig:"Tap the photo to enlarge",photonew:"Take new photo",qty:"Quantity",qtyq:"How many pieces?",qtyok:"Use",qtymax:"Max {n}",qtyreset:"Reset",today:"Today",pcs:"pcs",warn:"{n} not sent – the oldest is {a} old. Check the connection.",min:"min.",hr:"h",photo:"Take photo",retake:"Retake photo",cancel:"Cancel",comment:"Short description (optional)",photonote:"Photograph the textile only – avoid people and customer details.",support:"Support",supintro:"Having a problem, need guidance or have a request for the app? Contact:",copy:"Copy email",copied:"Copied",mail:"Send email",unsent:"not sent",diag:"Info for support",stats:"Registered reasons",d1:"Today",d7:"7 days",dall:"All",none:"No registrations yet",tot:"registrations",devnote:"This device only"},
-pl:{photook:"Zdjęcie gotowe",photobig:"Dotknij zdjęcia, aby powiększyć",photonew:"Zrób nowe zdjęcie",qty:"Ilość",qtyq:"Ile sztuk?",qtyok:"Użyj",qtymax:"Maks. {n}",qtyreset:"Wyzeruj",today:"Dziś",pcs:"szt.",warn:"Niewysłane: {n} – najstarsze ma {a}. Sprawdź połączenie.",min:"min",hr:"godz.",photo:"Zrób zdjęcie",retake:"Zrób nowe zdjęcie",cancel:"Anuluj",comment:"Krótki opis (opcjonalnie)",photonote:"Fotografuj tylko tekstylia – unikaj osób i danych klientów.",support:"Pomoc",supintro:"Masz problem, potrzebujesz wskazówek lub masz propozycję dotyczącą aplikacji? Skontaktuj się:",copy:"Kopiuj e-mail",copied:"Skopiowano",mail:"Wyślij e-mail",unsent:"niewysłane",diag:"Informacje dla wsparcia",stats:"Zarejestrowane przyczyny",d1:"Dziś",d7:"7 dni",dall:"Wszystkie",none:"Brak rejestracji",tot:"rejestracji",devnote:"Tylko to urządzenie"},
-ro:{photook:"Fotografie gata",photobig:"Atingeți fotografia pentru a o mări",photonew:"Fă o fotografie nouă",qty:"Cantitate",qtyq:"Câte bucăți?",qtyok:"Folosește",qtymax:"Max {n}",qtyreset:"Resetează",today:"Azi",pcs:"buc.",warn:"{n} netrimise – cea mai veche are {a}. Verificați conexiunea.",min:"min",hr:"h",photo:"Fă o poză",retake:"Fă altă poză",cancel:"Anulează",comment:"Scurtă descriere (opțional)",photonote:"Fotografiați doar textilul – evitați persoanele și datele clienților.",support:"Asistență",supintro:"Aveți o problemă, aveți nevoie de îndrumare sau o sugestie pentru aplicație? Contactați:",copy:"Copiază e-mailul",copied:"Copiat",mail:"Trimite e-mail",unsent:"netrimise",diag:"Informații pentru asistență",stats:"Motive înregistrate",d1:"Azi",d7:"7 zile",dall:"Toate",none:"Nicio înregistrare încă",tot:"înregistrări",devnote:"Doar acest dispozitiv"},
-uk:{photook:"Фото готове",photobig:"Торкніться фото, щоб збільшити",photonew:"Зробити нове фото",qty:"Кількість",qtyq:"Скільки штук?",qtyok:"Застосувати",qtymax:"Макс. {n}",qtyreset:"Скинути",today:"Сьогодні",pcs:"шт.",warn:"Не надіслано: {n} – найстаріше {a}. Перевірте зв’язок.",min:"хв",hr:"год",photo:"Зробити фото",retake:"Зробити нове фото",cancel:"Скасувати",comment:"Короткий опис (необов’язково)",photonote:"Фотографуйте лише текстиль – уникайте людей та даних клієнтів.",support:"Підтримка",supintro:"Проблема, потрібна допомога чи є побажання щодо застосунку? Зв’яжіться:",copy:"Копіювати e-mail",copied:"Скопійовано",mail:"Надіслати e-mail",unsent:"не надіслано",diag:"Дані для підтримки",stats:"Зареєстровані причини",d1:"Сьогодні",d7:"7 днів",dall:"Усі",none:"Ще немає записів",tot:"записів",devnote:"Лише цей пристрій"},
-fr:{photook:"Photo prête",photobig:"Touchez la photo pour l’agrandir",photonew:"Reprendre la photo",qty:"Quantité",qtyq:"Combien de pièces ?",qtyok:"Valider",qtymax:"Max {n}",qtyreset:"Réinit.",today:"Aujourd’hui",pcs:"pcs",warn:"{n} non envoyé(s) – le plus ancien date de {a}. Vérifiez la connexion.",min:"min",hr:"h",photo:"Prendre une photo",retake:"Reprendre la photo",cancel:"Annuler",comment:"Courte description (facultatif)",photonote:"Photographiez uniquement le textile – évitez les personnes et les informations client.",support:"Assistance",supintro:"Un problème, besoin d’aide ou une suggestion pour l’application ? Contactez :",copy:"Copier l’e-mail",copied:"Copié",mail:"Envoyer un e-mail",unsent:"non envoyé(s)",diag:"Informations pour l’assistance",stats:"Motifs enregistrés",d1:"Aujourd’hui",d7:"7 jours",dall:"Tous",none:"Aucun enregistrement pour le moment",tot:"enregistrements",devnote:"Cet appareil uniquement"}
+da:{edit:"✎ Rediger",editing:"Redigering",ecan:"Annullér",epin:"Kode til redigering",ewrong:"Forkert kode",eaddcat:"＋ Tilføj kategori",cemoji:"Emoji (valgfri)",esavefirst:"Gem eller annullér først",clist:"Fjern fra listen",chint:"Fjerner kun på denne enhed. Gamle registreringer påvirkes ikke.",csure:"Tryk igen",chid:"Skjult på denne enhed",cshow:"Vis igen",addart:"＋ Tilføj artikel",addvar:"＋ Tilføj variant",cname:"Navn",csize:"Størrelse (valgfri)",cvars:"Varianter – én pr. linje, fx Silver, Lille (valgfri)",csave:"Gem",cown:"Tilføjet på denne enhed",crem:"Fjern",cbak:"Sikkerhedskopi",cload:"Indlæs",cdup:"Findes allerede",creq:"Skriv et navn",cbakhint:"Kopiér teksten og gem den. Indsæt den igen og tryk Indlæs for at gendanne.",cbad:"Teksten kan ikke læses",photook:"Billede klar",photobig:"Forstør billedet",photonew:"Tag nyt billede",qty:"Antal",qtyq:"Hvor mange stk.?",qtyok:"Brug",qtymax:"Maks. {n}",qtyreset:"Nulstil",today:"I dag",pcs:"stk",warn:"{n} ikke sendt – den ældste er {a} gammel. Tjek netforbindelsen.",min:"min.",hr:"t.",photo:"Tag billede",retake:"Tag nyt billede",cancel:"Annuller",comment:"Kort beskrivelse (valgfri)",photonote:"Fotografér kun tekstilet – undgå personer og kundeoplysninger.",support:"Support",supintro:"Oplever du en fejl, eller har du brug for vejledning eller et ønske til appen? Kontakt:",copy:"Kopiér mail",copied:"Kopieret",mail:"Send mail",unsent:"ikke sendt",diag:"Oplysninger til support",stats:"Registrerede årsager",d1:"I dag",d7:"7 dage",dall:"Alle",none:"Ingen registreringer endnu",tot:"registreringer",devnote:"Kun denne enhed"},
+en:{edit:"✎ Edit",editing:"Editing",ecan:"Cancel",epin:"Code for editing",ewrong:"Wrong code",eaddcat:"＋ Add category",cemoji:"Emoji (optional)",esavefirst:"Save or cancel first",clist:"Remove from the list",chint:"Only removed on this device. Past registrations are not affected.",csure:"Tap again",chid:"Hidden on this device",cshow:"Show again",addart:"＋ Add article",addvar:"＋ Add variant",cname:"Name",csize:"Size (optional)",cvars:"Variants – one per line, e.g. Silver, Small (optional)",csave:"Save",cown:"Added on this device",crem:"Remove",cbak:"Backup",cload:"Load",cdup:"Already exists",creq:"Enter a name",cbakhint:"Copy the text and keep it. Paste it back and tap Load to restore.",cbad:"The text cannot be read",photook:"Photo ready",photobig:"Tap the photo to enlarge",photonew:"Take new photo",qty:"Quantity",qtyq:"How many pieces?",qtyok:"Use",qtymax:"Max {n}",qtyreset:"Reset",today:"Today",pcs:"pcs",warn:"{n} not sent – the oldest is {a} old. Check the connection.",min:"min.",hr:"h",photo:"Take photo",retake:"Retake photo",cancel:"Cancel",comment:"Short description (optional)",photonote:"Photograph the textile only – avoid people and customer details.",support:"Support",supintro:"Having a problem, need guidance or have a request for the app? Contact:",copy:"Copy email",copied:"Copied",mail:"Send email",unsent:"not sent",diag:"Info for support",stats:"Registered reasons",d1:"Today",d7:"7 days",dall:"All",none:"No registrations yet",tot:"registrations",devnote:"This device only"},
+pl:{edit:"✎ Edytuj",editing:"Edycja",ecan:"Anuluj",epin:"Kod do edycji",ewrong:"Błędny kod",eaddcat:"＋ Dodaj kategorię",cemoji:"Emoji (opcjonalnie)",esavefirst:"Najpierw zapisz lub anuluj",clist:"Usuń z listy",chint:"Usunięto tylko na tym urządzeniu. Wcześniejsze rejestracje pozostają bez zmian.",csure:"Dotknij ponownie",chid:"Ukryte na tym urządzeniu",cshow:"Pokaż ponownie",addart:"＋ Dodaj artykuł",addvar:"＋ Dodaj wariant",cname:"Nazwa",csize:"Rozmiar (opcjonalnie)",cvars:"Warianty – po jednym w wierszu, np. Silver, Mały (opcjonalnie)",csave:"Zapisz",cown:"Dodane na tym urządzeniu",crem:"Usuń",cbak:"Kopia zapasowa",cload:"Wczytaj",cdup:"Już istnieje",creq:"Wpisz nazwę",cbakhint:"Skopiuj tekst i zachowaj go. Wklej go z powrotem i naciśnij Wczytaj, aby przywrócić.",cbad:"Nie można odczytać tekstu",photook:"Zdjęcie gotowe",photobig:"Dotknij zdjęcia, aby powiększyć",photonew:"Zrób nowe zdjęcie",qty:"Ilość",qtyq:"Ile sztuk?",qtyok:"Użyj",qtymax:"Maks. {n}",qtyreset:"Wyzeruj",today:"Dziś",pcs:"szt.",warn:"Niewysłane: {n} – najstarsze ma {a}. Sprawdź połączenie.",min:"min",hr:"godz.",photo:"Zrób zdjęcie",retake:"Zrób nowe zdjęcie",cancel:"Anuluj",comment:"Krótki opis (opcjonalnie)",photonote:"Fotografuj tylko tekstylia – unikaj osób i danych klientów.",support:"Pomoc",supintro:"Masz problem, potrzebujesz wskazówek lub masz propozycję dotyczącą aplikacji? Skontaktuj się:",copy:"Kopiuj e-mail",copied:"Skopiowano",mail:"Wyślij e-mail",unsent:"niewysłane",diag:"Informacje dla wsparcia",stats:"Zarejestrowane przyczyny",d1:"Dziś",d7:"7 dni",dall:"Wszystkie",none:"Brak rejestracji",tot:"rejestracji",devnote:"Tylko to urządzenie"},
+ro:{edit:"✎ Editează",editing:"Editare",ecan:"Anulează",epin:"Cod pentru editare",ewrong:"Cod greșit",eaddcat:"＋ Adaugă categorie",cemoji:"Emoji (opțional)",esavefirst:"Salvează sau anulează mai întâi",clist:"Elimină din listă",chint:"Eliminat doar pe acest dispozitiv. Înregistrările anterioare nu sunt afectate.",csure:"Apasă din nou",chid:"Ascuns pe acest dispozitiv",cshow:"Arată din nou",addart:"＋ Adaugă articol",addvar:"＋ Adaugă variantă",cname:"Nume",csize:"Mărime (opțional)",cvars:"Variante – câte una pe rând, ex. Silver, Mic (opțional)",csave:"Salvează",cown:"Adăugate pe acest dispozitiv",crem:"Elimină",cbak:"Copie de siguranță",cload:"Încarcă",cdup:"Există deja",creq:"Scrie un nume",cbakhint:"Copiază textul și păstrează-l. Lipește-l înapoi și apasă Încarcă pentru a restaura.",cbad:"Textul nu poate fi citit",photook:"Fotografie gata",photobig:"Atingeți fotografia pentru a o mări",photonew:"Fă o fotografie nouă",qty:"Cantitate",qtyq:"Câte bucăți?",qtyok:"Folosește",qtymax:"Max {n}",qtyreset:"Resetează",today:"Azi",pcs:"buc.",warn:"{n} netrimise – cea mai veche are {a}. Verificați conexiunea.",min:"min",hr:"h",photo:"Fă o poză",retake:"Fă altă poză",cancel:"Anulează",comment:"Scurtă descriere (opțional)",photonote:"Fotografiați doar textilul – evitați persoanele și datele clienților.",support:"Asistență",supintro:"Aveți o problemă, aveți nevoie de îndrumare sau o sugestie pentru aplicație? Contactați:",copy:"Copiază e-mailul",copied:"Copiat",mail:"Trimite e-mail",unsent:"netrimise",diag:"Informații pentru asistență",stats:"Motive înregistrate",d1:"Azi",d7:"7 zile",dall:"Toate",none:"Nicio înregistrare încă",tot:"înregistrări",devnote:"Doar acest dispozitiv"},
+uk:{edit:"✎ Редагувати",editing:"Редагування",ecan:"Скасувати",epin:"Код для редагування",ewrong:"Хибний код",eaddcat:"＋ Додати категорію",cemoji:"Емодзі (необов’язково)",esavefirst:"Спочатку збережіть або скасуйте",clist:"Прибрати зі списку",chint:"Прибрано лише на цьому пристрої. Попередні записи не змінюються.",csure:"Натисніть ще раз",chid:"Приховано на цьому пристрої",cshow:"Показати знову",addart:"＋ Додати виріб",addvar:"＋ Додати варіант",cname:"Назва",csize:"Розмір (необов’язково)",cvars:"Варіанти – по одному в рядку, напр. Silver, Малий (необов’язково)",csave:"Зберегти",cown:"Додано на цьому пристрої",crem:"Видалити",cbak:"Резервна копія",cload:"Завантажити",cdup:"Уже існує",creq:"Введіть назву",cbakhint:"Скопіюйте текст і збережіть його. Вставте його назад і натисніть «Завантажити», щоб відновити.",cbad:"Текст неможливо прочитати",photook:"Фото готове",photobig:"Торкніться фото, щоб збільшити",photonew:"Зробити нове фото",qty:"Кількість",qtyq:"Скільки штук?",qtyok:"Застосувати",qtymax:"Макс. {n}",qtyreset:"Скинути",today:"Сьогодні",pcs:"шт.",warn:"Не надіслано: {n} – найстаріше {a}. Перевірте зв’язок.",min:"хв",hr:"год",photo:"Зробити фото",retake:"Зробити нове фото",cancel:"Скасувати",comment:"Короткий опис (необов’язково)",photonote:"Фотографуйте лише текстиль – уникайте людей та даних клієнтів.",support:"Підтримка",supintro:"Проблема, потрібна допомога чи є побажання щодо застосунку? Зв’яжіться:",copy:"Копіювати e-mail",copied:"Скопійовано",mail:"Надіслати e-mail",unsent:"не надіслано",diag:"Дані для підтримки",stats:"Зареєстровані причини",d1:"Сьогодні",d7:"7 днів",dall:"Усі",none:"Ще немає записів",tot:"записів",devnote:"Лише цей пристрій"},
+fr:{edit:"✎ Modifier",editing:"Modification",ecan:"Annuler",epin:"Code de modification",ewrong:"Code incorrect",eaddcat:"＋ Ajouter une catégorie",cemoji:"Emoji (facultatif)",esavefirst:"Enregistrez ou annulez d’abord",clist:"Retirer de la liste",chint:"Retiré uniquement sur cet appareil. Les enregistrements passés ne sont pas modifiés.",csure:"Appuyez encore",chid:"Masqué sur cet appareil",cshow:"Réafficher",addart:"＋ Ajouter un article",addvar:"＋ Ajouter une variante",cname:"Nom",csize:"Taille (facultatif)",cvars:"Variantes – une par ligne, ex. Silver, Petit (facultatif)",csave:"Enregistrer",cown:"Ajouté sur cet appareil",crem:"Retirer",cbak:"Sauvegarde",cload:"Charger",cdup:"Existe déjà",creq:"Saisissez un nom",cbakhint:"Copiez le texte et conservez-le. Collez-le et appuyez sur Charger pour restaurer.",cbad:"Le texte est illisible",photook:"Photo prête",photobig:"Touchez la photo pour l’agrandir",photonew:"Reprendre la photo",qty:"Quantité",qtyq:"Combien de pièces ?",qtyok:"Valider",qtymax:"Max {n}",qtyreset:"Réinit.",today:"Aujourd’hui",pcs:"pcs",warn:"{n} non envoyé(s) – le plus ancien date de {a}. Vérifiez la connexion.",min:"min",hr:"h",photo:"Prendre une photo",retake:"Reprendre la photo",cancel:"Annuler",comment:"Courte description (facultatif)",photonote:"Photographiez uniquement le textile – évitez les personnes et les informations client.",support:"Assistance",supintro:"Un problème, besoin d’aide ou une suggestion pour l’application ? Contactez :",copy:"Copier l’e-mail",copied:"Copié",mail:"Envoyer un e-mail",unsent:"non envoyé(s)",diag:"Informations pour l’assistance",stats:"Motifs enregistrés",d1:"Aujourd’hui",d7:"7 jours",dall:"Tous",none:"Aucun enregistrement pour le moment",tot:"enregistrements",devnote:"Cet appareil uniquement"}
 };
 const t2=k=>((I2[lang]||I2.da)[k]||I2.da[k]||k);
 let todayByReason={};
@@ -567,7 +673,7 @@ function screenAndet(){
   if((window.KASSATION_CONFIG||{}).ANDET_AUTO_KAMERA!==false)take(); // kameraet åbner med det samme (slå fra med ANDET_AUTO_KAMERA: false i config.js)
   $('#sv2').onclick=()=>{$('#sv2').disabled=true;confirmSave('r_andet',{comment:$('#cm').value.trim(),photo})};
 }
-function screenReason(){
+function screenReason(){if(editMode)return;
 multiMode=false;
 const m=$('#main');
 m.innerHTML=`<div class="backbar"><button class="backbtn" id="b2">${t('back')}</button>${size&&size.length&&!(curArt&&curArt.andet)&&!singleArt()?`<button class="mmbtn" id="lk" style="margin-left:auto">🔒 ${t('lockvar')}</button>`:''}<button class="mmbtn" id="qb" style="margin-left:${size&&size.length&&!(curArt&&curArt.andet)&&!singleArt()?'8px':'auto'}">＃ ${t2('qty')}</button><button class="mmbtn" id="mm" style="margin-left:8px">＋ ${t('multi')}</button></div><div class="crumb" style="padding:0 0 8px"><b>${tArt(art)}</b>${size&&size.length?' · '+entryLabel(size):''} · ${t('choose_reason')}</div><div class="grid g3 rfill" id="g"></div><div class="savebar" id="sb" style="display:none"><button class="btn" id="sv" disabled>${t('save')}</button></div>`;
