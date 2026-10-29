@@ -21,6 +21,7 @@ window.KASSATION_CONFIG = {
   VIBRATION: true,
    MAX_ANTAL: 10000,
 SEND_ANTAL_FELT: true,
+     STATION_FELT: true,
     // Support-knap på forsiden. Udfyld mindst én af linjerne (tom = ingen knap). Kollegerne kan kontakte jer med e-mailen,
   // også selv om tabletten ikke har en mailapp (adressen vises som tekst og kan kopieres).
   SUPPORT_NAME: "Christoffer Christensen",
